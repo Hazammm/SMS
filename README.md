@@ -1,7 +1,7 @@
 # 🎓 Student Management System (SMS)
 ### AI-Powered Academic Platform · Built with Python & FastAPI
 
-> *"Could this SMS platform BE any more feature-complete?"*  — Chandler Bing
+> *"Could this SMS platform BE any more feature-complete?"*  — Chandler Bing (2026)
 
 ---
 
