@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Any, Dict
 from datetime import date
 from pydantic import BaseModel, Field
 from contextlib import asynccontextmanager
@@ -10,6 +10,12 @@ import os
 
 from app.db import get_db, init_db, Course, Task, SkillGoal, RoutineLog
 from app.ml import recommend_skills, optimize_schedule
+from app.analytics import (
+    compute_weighted_gpa, gpa_trend, grade_distribution,
+    gpa_histogram, study_efficiency_score, burnout_risk, weekly_report
+)
+from app.notifications import deadline_alerts, productivity_nudges, study_streak, daily_quote
+from app.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -364,6 +370,87 @@ def get_optimized_schedule(db: Session = Depends(get_db)):
         return mapped_schedule
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Routine optimizer failed: {str(e)}")
+
+# ==========================================
+# Endpoints: Analytics
+# ==========================================
+@app.get("/api/analytics/gpa")
+def get_gpa_analytics(db: Session = Depends(get_db)):
+    """Return weighted GPA, grade distribution, and a GPA histogram."""
+    courses = db.query(Course).all()
+    course_dicts = [{"code": c.code, "name": c.name, "credits": c.credits, "grade": c.grade, "gpa": c.gpa} for c in courses]
+    return {
+        "weighted_gpa": compute_weighted_gpa(course_dicts),
+        "grade_distribution": grade_distribution(course_dicts),
+        "gpa_histogram": gpa_histogram(course_dicts, bins=5),
+    }
+
+@app.get("/api/analytics/efficiency")
+def get_study_efficiency(db: Session = Depends(get_db)):
+    """Return per-session and overall study efficiency scores."""
+    logs = db.query(RoutineLog).all()
+    log_dicts = [{"activity": l.activity, "duration": l.duration, "productivity": l.productivity, "date": l.date, "category": l.category} for l in logs]
+    return study_efficiency_score(log_dicts)
+
+@app.get("/api/analytics/burnout")
+def get_burnout_risk(db: Session = Depends(get_db)):
+    """Return burnout risk level and advice based on this week's logs."""
+    logs = db.query(RoutineLog).all()
+    log_dicts = [{"activity": l.activity, "duration": l.duration, "productivity": l.productivity, "date": l.date, "category": l.category} for l in logs]
+    return burnout_risk(log_dicts)
+
+# ==========================================
+# Endpoints: Notifications
+# ==========================================
+@app.get("/api/notifications/alerts")
+def get_deadline_alerts(db: Session = Depends(get_db)):
+    """Return urgency-sorted deadline alerts for all non-completed tasks."""
+    tasks = db.query(Task).filter(Task.status != "completed").all()
+    task_dicts = [{"id": t.id, "title": t.title, "due_date": t.due_date, "status": t.status, "priority": t.priority, "category": t.category} for t in tasks]
+    return deadline_alerts(task_dicts)
+
+@app.get("/api/notifications/nudges")
+def get_productivity_nudges(db: Session = Depends(get_db)):
+    """Return personalised productivity nudges based on recent session logs."""
+    logs = db.query(RoutineLog).all()
+    log_dicts = [{"activity": l.activity, "duration": l.duration, "productivity": l.productivity, "date": l.date} for l in logs]
+    return {"nudges": productivity_nudges(log_dicts)}
+
+@app.get("/api/notifications/quote")
+def get_daily_quote(chandler_mode: bool = True):
+    """Return today's motivational (or Chandler Bing) quote."""
+    return {"quote": daily_quote(chandler_mode=chandler_mode)}
+
+# ==========================================
+# Endpoints: Reports & Streak
+# ==========================================
+@app.get("/api/report/weekly")
+def get_weekly_report(db: Session = Depends(get_db)):
+    """Return a comprehensive weekly performance report."""
+    courses = db.query(Course).all()
+    logs = db.query(RoutineLog).all()
+    tasks = db.query(Task).all()
+    course_dicts = [{"credits": c.credits, "grade": c.grade, "gpa": c.gpa} for c in courses]
+    log_dicts = [{"duration": l.duration, "productivity": l.productivity, "date": l.date} for l in logs]
+    task_dicts = [{"status": t.status, "priority": t.priority, "due_date": t.due_date, "title": t.title} for t in tasks]
+    return weekly_report(course_dicts, log_dicts, task_dicts, student_name=settings.student.default_name)
+
+@app.get("/api/streak")
+def get_study_streak(db: Session = Depends(get_db)):
+    """Return current and longest study streak counts."""
+    logs = db.query(RoutineLog).all()
+    log_dicts = [{"date": l.date} for l in logs]
+    return study_streak(log_dicts)
+
+@app.get("/api/student/profile")
+def get_student_profile():
+    """Return the student profile configuration (name, avatar, role)."""
+    return {
+        "name": settings.student.default_name,
+        "role": settings.student.default_role,
+        "avatar": settings.student.avatar_path,
+        "chandler_mode": settings.student.chandler_mode_quotes,
+    }
 
 # ==========================================
 # Static Files Server Mount (SPA Mode)

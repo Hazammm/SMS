@@ -1,76 +1,32 @@
-<div align="center">
+# 🎓 Student Management System (SMS)
+### AI-Powered Academic Platform · Built with Python & FastAPI
 
-<img src="https://img.shields.io/badge/AuraSMS-Student%20Management%20System-6C63FF?style=for-the-badge&logo=graduation-cap&logoColor=white" alt="AuraSMS Banner"/>
-
-# 🎓 AuraSMS — Premium Student Management System
-
-**A full-stack, AI-powered academic companion built with FastAPI & Vanilla JS**
-
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML%20Engine-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
-[![Chart.js](https://img.shields.io/badge/Chart.js-Analytics-FF6384?style=flat-square&logo=chart.js&logoColor=white)](https://www.chartjs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
-
-> *Track courses. Manage tasks. Log routines. Let AI optimize your schedule and recommend the skills that matter most for your career.*
-
-</div>
+> *"Could this SMS platform BE any more feature-complete?"*  — Chandler Bing
 
 ---
 
-## 🌟 Overview
+## 🚀 Overview
 
-**AuraSMS** (Aura Student Management System) is a sleek, full-stack web application that helps students take control of their academic life. Beyond the standard features of a planner, it integrates a **Machine Learning engine** that learns from your study habits to generate a personalized daily schedule and recommends the most relevant skill paths aligned to your career goals.
+A **premium, AI-powered Student Management System** designed for Chandler Bing, featuring:
 
-The system runs as a single unified server — the FastAPI backend serves both the REST API and the Single-Page Application (SPA) frontend, making deployment effortless with a single command.
-
----
-
-## ✨ Features
-
-### 📊 Overview Dashboard
-- Real-time academic metrics: **GPA, task completion rate, and active skills** at a glance
-- **GPA Progression Chart** visualizing grade trends over time
-- **Daily Productivity & Study Patterns** bar chart powered by Chart.js
-- Quick-access widgets for upcoming tasks and today's schedule
-
-### 📚 Course Manager
-- Full **CRUD management** for enrolled courses
-- Track course **code, name, credits, grade, and GPA contribution**
-- Duplicate course-code detection with graceful error handling
-
-### ✅ Kanban Task Board
-- Three-column board: **To Do → In Progress → Completed**
-- Categorize tasks as *assignment*, *project*, *exam*, or *study*
-- Set **priority levels** (low / medium / high) and due dates
-- Real-time status drag-and-update flow
-
-### 📅 Smart Routine Planner
-- Log study sessions with **activity, duration, productivity score (1–10), and category**
-- **AI-Generated Daily Schedule** button triggers the ML optimizer on demand
-- The schedule adapts automatically to your sleep debt, workload, and peak focus periods
-
-### 🤖 Skill AI Recommender
-- Enter your career objective (e.g., *"become an AI Engineer"*)
-- The **TF-IDF + Cosine Similarity engine** matches your goal against a curated corpus of 10 high-value tech learning tracks
-- Returns ranked recommendations with a **similarity score**, category, and required skills
+- 📊 **GPA Analytics** — Weighted GPA, grade distribution, trend analysis
+- 🤖 **ML Skill Recommender** — TF-IDF + Cosine Similarity course recommendations
+- 📅 **Adaptive Schedule Optimizer** — Burnout-aware daily routine generation
+- 🔔 **Smart Notifications** — Deadline alerts, productivity nudges, study streaks
+- 📈 **Weekly Reports** — Comprehensive academic performance summaries
+- 🎨 **Glassmorphism UI** — Premium dark-mode dashboard with Chart.js visualisations
 
 ---
 
-## 🛠 Tech Stack
+## 🛠️ Tech Stack
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| **Backend** | FastAPI | REST API with async support & auto-generated Swagger docs |
-| **ORM** | SQLAlchemy | Database abstraction layer |
-| **Database** | SQLite | Lightweight, zero-config local persistence |
-| **ML Engine** | scikit-learn, NumPy | TF-IDF vectorization, cosine similarity, schedule optimization heuristic |
-| **Data Validation** | Pydantic v2 | Request/response schema enforcement |
-| **Frontend** | Vanilla HTML/CSS/JS | Zero-dependency SPA with dark-mode glassmorphism UI |
-| **Charts** | Chart.js | GPA progression & productivity visualizations |
-| **Icons** | Font Awesome 6 | Consistent, premium iconography |
-| **Fonts** | Google Fonts (Outfit, Space Grotesk) | Clean, modern typography |
+| Layer       | Technology                              |
+|-------------|----------------------------------------|
+| Backend     | Python 3.10+, FastAPI, SQLAlchemy      |
+| ML Engine   | scikit-learn (TF-IDF, Cosine Similarity), NumPy |
+| Database    | SQLite (via SQLAlchemy ORM)            |
+| Frontend    | Vanilla HTML5, CSS3 (Glassmorphism), JS, Chart.js |
+| Testing     | Python `unittest`                      |
 
 ---
 
