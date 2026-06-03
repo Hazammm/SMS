@@ -23,6 +23,13 @@ import subprocess
 import sys
 from datetime import datetime
 
+# Configure stdout to use UTF-8 (fixes UnicodeEncodeError on Windows terminals)
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 # ─── ANSI colours ─────────────────────────────────────────────────────────────
 PURPLE = "\033[95m"
 CYAN   = "\033[96m"
