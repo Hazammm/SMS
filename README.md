@@ -1,13 +1,25 @@
-# 🎓 Student Management System (SMS)
-### AI-Powered Academic Platform · Built with Python & FastAPI
+<div align="center">
 
-> *"Could this SMS platform BE any more feature-complete?"* 
+<img src="https://img.shields.io/badge/AuraSMS-Student%20Management%20System-6C63FF?style=for-the-badge&logo=graduation-cap&logoColor=white" alt="AuraSMS Banner"/>
 
----
+# 🎓 AuraSMS — Premium Student Management System
+
+**A full-stack, AI-powered academic companion built with FastAPI & Vanilla JS**
+
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-ML%20Engine-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![Chart.js](https://img.shields.io/badge/Chart.js-Analytics-FF6384?style=flat-square&logo=chart.js&logoColor=white)](https://www.chartjs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
+
+> *Track courses. Manage tasks. Log routines. Let AI optimize your schedule and recommend the skills that matter most for your career.*
+
+</div>
 
 ## 🚀 Overview
 
-A **premium, AI-powered Student Management System** designed for Chandler Bing, featuring:
+A **premium, AI-powered Student Management System** designed for Students, featuring:
 
 - 📊 **GPA Analytics** — Weighted GPA, grade distribution, trend analysis
 - 🤖 **ML Skill Recommender** — TF-IDF + Cosine Similarity course recommendations
@@ -16,19 +28,19 @@ A **premium, AI-powered Student Management System** designed for Chandler Bing, 
 - 📈 **Weekly Reports** — Comprehensive academic performance summaries
 - 🎨 **Glassmorphism UI** — Premium dark-mode dashboard with Chart.js visualisations
 
----
+## 🛠 Tech Stack
 
-## 🛠️ Tech Stack
-
-| Layer       | Technology                              |
-|-------------|----------------------------------------|
-| Backend     | Python 3.10+, FastAPI, SQLAlchemy      |
-| ML Engine   | scikit-learn (TF-IDF, Cosine Similarity), NumPy |
-| Database    | SQLite (via SQLAlchemy ORM)            |
-| Frontend    | Vanilla HTML5, CSS3 (Glassmorphism), JS, Chart.js |
-| Testing     | Python `unittest`                      |
-
----
+| Layer | Technology | Purpose |
+|---|---|---|
+| **Backend** | FastAPI | REST API with async support & auto-generated Swagger docs |
+| **ORM** | SQLAlchemy | Database abstraction layer |
+| **Database** | SQLite | Lightweight, zero-config local persistence |
+| **ML Engine** | scikit-learn, NumPy | TF-IDF vectorization, cosine similarity, schedule optimization heuristic |
+| **Data Validation** | Pydantic v2 | Request/response schema enforcement |
+| **Frontend** | Vanilla HTML/CSS/JS | Zero-dependency SPA with dark-mode glassmorphism UI |
+| **Charts** | Chart.js | GPA progression & productivity visualizations |
+| **Icons** | Font Awesome 6 | Consistent, premium iconography |
+| **Fonts** | Google Fonts (Outfit, Space Grotesk) | Clean, modern typography |
 
 ## 📁 Project Structure
 
@@ -55,12 +67,9 @@ SMS/
 └── LICENSE
 ```
 
----
-
 ## 🚀 Getting Started
 
 ### Prerequisites
-
 - Python **3.10+**
 - `pip` package manager
 - A terminal (PowerShell, bash, zsh)
@@ -118,8 +127,6 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 > **Note:** On first startup, the database is automatically created and seeded with sample courses, tasks, skill goals, and routine logs so you can explore all features immediately.
 
----
-
 ## 🧠 ML Architecture
 
 AuraSMS features two purpose-built ML components, both implemented without heavy model infrastructure — fast, explainable, and lightweight.
@@ -148,8 +155,6 @@ Student Career Objective (text)
 2. The student's free-text career objective is transformed into the same TF-IDF vector space.
 3. **Cosine similarity** is computed between the objective vector and all corpus vectors.
 4. The top-N closest matches are returned with their similarity scores, making recommendations fully transparent and explainable.
-
----
 
 ### 2. Routine Schedule Optimizer
 
@@ -185,13 +190,11 @@ Routine Logs (past sessions)  +  Active Tasks
 - High-priority tasks inflate the workload score, dynamically extending study blocks
 - Peak focus periods are derived from each student's own historical productivity data
 
----
 
 ## 📄 License
 
 This project is licensed under the **MIT License** 
 
----
 
 <div align="center">
 
@@ -200,3 +203,4 @@ Built with 💜 by **Hazam Liaqat**
 *AuraSMS — Because every student deserves a smarter semester.*
 
 </div>
+
