@@ -19,20 +19,6 @@
 
 ---
 
-## 📖 Table of Contents
-
-- [Overview](#-overview)
-- [Features](#-features)
-- [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [API Reference](#-api-reference)
-- [ML Architecture](#-ml-architecture)
-- [Database Schema](#-database-schema)
-- [License](#-license)
-
----
-
 ## 🌟 Overview
 
 **AuraSMS** (Aura Student Management System) is a sleek, full-stack web application that helps students take control of their academic life. Beyond the standard features of a planner, it integrates a **Machine Learning engine** that learns from your study habits to generate a personalized daily schedule and recommends the most relevant skill paths aligned to your career goals.
