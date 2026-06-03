@@ -1,8 +1,0 @@
-# Tell GitHub to treat all .py files as Python (forces language detection)
-*.py linguist-language=Python
-*.py linguist-detectable=true
-
-# count JS/HTML/CSS toward the primary language
-*.js linguist-detectable=true
-*.html linguist-detectable=true
-*.css linguist-detectable=true
