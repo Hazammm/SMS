@@ -36,85 +36,167 @@ A **premium, AI-powered Student Management System** designed for Chandler Bing, 
 SMS/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py          # FastAPI app + all API endpoints
-│   │   ├── db.py            # SQLAlchemy models & database seeder
-│   │   ├── ml.py            # TF-IDF skill recommender & schedule optimiser
-│   │   ├── analytics.py     # GPA trend, efficiency scoring, burnout detection
-│   │   ├── notifications.py # Deadline alerts, nudges, study streaks
-│   │   ├── reports.py       # Semester & weekly report generators
-│   │   └── config.py        # Centralised app configuration
-│   └── requirements.txt
+│   │   ├── __init__.py        # App package entry point
+│   │   ├── main.py            # FastAPI app, routes, and Pydantic schemas
+│   │   ├── db.py              # SQLAlchemy models, DB init, and seed data
+│   │   └── ml.py              # TF-IDF recommender & schedule optimizer
+│   ├── requirements.txt       # Python dependencies
+│   └── sms.db                 # SQLite database (auto-created on first run)
+│
 ├── frontend/
-│   ├── index.html           # Premium glassmorphism SPA
-│   ├── css/style.css
-│   └── js/app.js
-├── tests/
-│   ├── test_analytics.py    # Unit tests — GPA, efficiency, burnout
-│   └── test_notifications.py # Unit tests — alerts, nudges, streaks
-├── scripts/
-│   ├── seed_demo_data.py    # Database seeder script
-│   └── check_health.py      # API health check script
-├── hello.py                 # CLI launcher
-├── run.py                   # Server launcher
-└── .gitattributes           # Forces GitHub to detect Python
+│   ├── index.html             # SPA shell with all tab sections
+│   ├── css/
+│   │   └── style.css          # Glassmorphism dark theme + responsive layout
+│   └── js/
+│       └── app.js             # All frontend logic — API calls, charts, UI state
+│
+├── run.py                     # One-command launcher (manages venv + uvicorn)
+├── hello.py                   # Quick connectivity test script
+└── LICENSE
 ```
 
 ---
 
-## ⚡ Quick Start
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python **3.10+**
+- `pip` package manager
+- A terminal (PowerShell, bash, zsh)
+
+### 1. Clone the Repository
 
 ```bash
-# 1. Install dependencies
+git clone https://github.com/Hazammm/SMS.git
+cd SMS
+```
+
+### 2. Create and Activate a Virtual Environment
+
+```bash
+# Navigate into the backend directory
 cd backend
+
+# Create the virtual environment
+python -m venv venv
+
+# Activate it
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
-
-# 2. Launch the platform
-python hello.py
-
-# 3. Open in browser
-#    http://127.0.0.1:8000
 ```
 
----
+### 4. Run the Application
 
-## 🔑 API Endpoints
+Go back to the project root and use the launcher:
 
-| Method | Endpoint                        | Description                        |
-|--------|---------------------------------|------------------------------------|
-| GET    | `/api/health`                   | Health check                       |
-| GET    | `/api/courses`                  | List all courses                   |
-| POST   | `/api/courses`                  | Add a course                       |
-| GET    | `/api/tasks`                    | List all tasks                     |
-| POST   | `/api/tasks`                    | Create a task                      |
-| GET    | `/api/analytics/gpa`            | GPA analytics & distribution       |
-| GET    | `/api/analytics/burnout`        | Burnout risk assessment            |
-| GET    | `/api/analytics/efficiency`     | Study efficiency scores            |
-| GET    | `/api/notifications/alerts`     | Deadline alerts (urgency-sorted)   |
-| GET    | `/api/notifications/nudges`     | Personalised productivity nudges   |
-| GET    | `/api/notifications/quote`      | Daily Chandler Bing quote          |
-| GET    | `/api/report/weekly`            | Weekly performance report          |
-| GET    | `/api/streak`                   | Study streak tracker               |
-| GET    | `/api/student/profile`          | Student profile (Chandler Bing)    |
-| POST   | `/api/recommend-skills`         | ML skill recommendations           |
-| GET    | `/api/schedule/daily`           | Optimised daily schedule           |
+```bash
+cd ..
+python run.py
+```
 
----
-
-## 🧪 Running Tests
+Or run uvicorn directly from the backend directory:
 
 ```bash
 cd backend
-python -m pytest ../tests/ -v
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
+### 5. Open the App
+
+| URL | Description |
+|---|---|
+| `http://127.0.0.1:8000` | 🎓 AuraSMS Web Application |
+
+> **Note:** On first startup, the database is automatically created and seeded with sample courses, tasks, skill goals, and routine logs so you can explore all features immediately.
+
 ---
 
-## 👤 Student Profile
+## 🧠 ML Architecture
 
-**Name:** Chandler Bing  
-**Role:** Computer Science Student  
-**GPA:** 3.85 / 4.00  
+AuraSMS features two purpose-built ML components, both implemented without heavy model infrastructure — fast, explainable, and lightweight.
+
+### 1. Content-Based Skill Recommender
+
+**Module:** `backend/app/ml.py → recommend_skills()`
+
+```
+Student Career Objective (text)
+         │
+         ▼
+  TF-IDF Vectorizer
+  (fits on 10-item corpus of tech learning tracks)
+         │
+         ▼
+  Cosine Similarity
+  (objective vector vs. all corpus vectors)
+         │
+         ▼
+  Top-N matches ranked by similarity score
+```
+
+**How it works:**
+1. A corpus of 10 curated tech learning tracks (ML, Web Dev, Cloud, Cybersecurity, etc.) is vectorized using `TfidfVectorizer` from scikit-learn.
+2. The student's free-text career objective is transformed into the same TF-IDF vector space.
+3. **Cosine similarity** is computed between the objective vector and all corpus vectors.
+4. The top-N closest matches are returned with their similarity scores, making recommendations fully transparent and explainable.
 
 ---
 
-*Built with ❤️ and a healthy dose of sarcasm.*
+### 2. Routine Schedule Optimizer
+
+**Module:** `backend/app/ml.py → optimize_schedule()`
+
+```
+Routine Logs (past sessions)  +  Active Tasks
+           │                          │
+           ▼                          ▼
+  Sleep Debt Analysis         Workload Score Calculation
+  (avg study hours →          (per-task priority weighting:
+   estimated sleep hours →     high=2.5, med=1.5, low=0.75)
+   optimal vs. actual)
+           │                          │
+           └──────────┬───────────────┘
+                      ▼
+           Sleep Status Classification
+           ┌──────────────────────────────────────┐
+           │  Healthy Sleep   → Deep Work (90min) │
+           │  Mild Sleep Debt → Pomodoro (50/10)  │
+           │  Sleep Deprived  → Light Mode (40/20)│
+           └──────────────────────────────────────┘
+                      │
+                      ▼
+           Hour-by-Hour Schedule Generation
+           (adjusted study blocks, nap slots,
+            and peak-focus period alignment)
+```
+
+**Key behaviors:**
+- Recommended study hours are **capped between 2 and 8 hours** to prevent burnout
+- Sleep-deprived students receive a mandatory **power nap slot** and reduced study load
+- High-priority tasks inflate the workload score, dynamically extending study blocks
+- Peak focus periods are derived from each student's own historical productivity data
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** 
+
+---
+
+<div align="center">
+
+Built with 💜 by **Hazam Liaqat**
+
+*AuraSMS — Because every student deserves a smarter semester.*
+
+</div>
