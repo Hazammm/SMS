@@ -23,30 +23,18 @@ except Exception:
     pass
 
 # Ensure the backend package is on the path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 
-try:
-    from app.db import (
-        Base,
-        Course,
-        Task,
-        RoutineLog,
-        SkillGoal,
-        engine,
-        SessionLocal,
-    )
-except ModuleNotFoundError:
-    # Fallback for static analysis tools / IDEs when "backend" is not in search path
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-    from backend.app.db import (  # type: ignore
-        Base,
-        Course,
-        Task,
-        RoutineLog,
-        SkillGoal,
-        engine,
-        SessionLocal,
-    )
+from backend.app.db import (
+    Base,
+    Course,
+    Task,
+    RoutineLog,
+    SkillGoal,
+    engine,
+    SessionLocal,
+)
 
 
 def parse_args() -> argparse.Namespace:
