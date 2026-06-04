@@ -20,7 +20,8 @@ class DatabaseConfig:
     """SQLite / SQLAlchemy database configuration."""
     url: str = field(
         default_factory=lambda: os.environ.get(
-            "SMS_DB_URL", "sqlite:///./sms.db"
+            "SMS_DB_URL",
+            f"sqlite:///{os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'sms.db')}"
         )
     )
     echo_sql: bool = field(

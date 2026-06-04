@@ -75,10 +75,11 @@ def print_info() -> None:
     print("─" * 50)
     for pkg in packages:
         try:
-            mod = __import__(pkg)
+            import importlib
+            mod = importlib.import_module(pkg)
             version = getattr(mod, "__version__", "?")
             print(f"  {GREEN}✓{RESET}  {pkg:<15} {CYAN}{version}{RESET}")
-        except ImportError:
+        except Exception:
             print(f"  {RED}✗{RESET}  {pkg:<15} {RED}not installed{RESET}")
     print("─" * 50 + "\n")
 

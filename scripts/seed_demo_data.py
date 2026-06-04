@@ -15,6 +15,13 @@ import sys
 import os
 from datetime import date, timedelta
 
+# Configure stdout to use UTF-8 (fixes UnicodeEncodeError on Windows terminals)
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 # Ensure the backend package is on the path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend")))
 

@@ -15,6 +15,13 @@ import sys
 import time
 from typing import NamedTuple
 
+# Configure stdout to use UTF-8 (fixes UnicodeEncodeError on Windows terminals)
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
 try:
     import urllib.request
     import urllib.error
