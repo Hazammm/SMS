@@ -165,8 +165,7 @@ def run(reset: bool = False) -> None:
     db = SessionLocal()
     try:
         # Only seed if empty
-        from app.db import Course as C
-        if reset or db.query(C).first() is None:
+        if reset or db.query(Course).first() is None:
             print("\nSeeding tables:")
             seed_courses(db)
             seed_tasks(db)
