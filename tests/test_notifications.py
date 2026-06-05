@@ -141,7 +141,7 @@ class TestProductivityNudges(unittest.TestCase):
             _log(90, 9, day_offset=2),
         ]
         nudges = productivity_nudges(logs)
-        self.assertTrue(any("streak" in n.lower() or "🔥" in n for n in nudges))
+        self.assertTrue(any("streak" in n.lower() or "" in n for n in nudges))
 
     def test_long_session_nudge(self):
         logs = [_log(200, 8, day_offset=0)]

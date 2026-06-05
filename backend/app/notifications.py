@@ -18,10 +18,10 @@ from typing import Any
 # Deadline Alert Tiers
 # ---------------------------------------------------------------------------
 URGENCY_TIERS: list[dict[str, Any]] = [
-    {"label": "CRITICAL",  "days": 1,  "color": "#ff4d6d", "icon": "🚨"},
-    {"label": "HIGH",      "days": 3,  "color": "#ff9f43", "icon": "⚠️"},
-    {"label": "MEDIUM",    "days": 7,  "color": "#ffd166", "icon": "📅"},
-    {"label": "LOW",       "days": 14, "color": "#06d6a0", "icon": "🗓️"},
+    {"label": "CRITICAL",  "days": 1,  "color": "#ff4d6d", "icon": ""},
+    {"label": "HIGH",      "days": 3,  "color": "#ff9f43", "icon": ""},
+    {"label": "MEDIUM",    "days": 7,  "color": "#ffd166", "icon": ""},
+    {"label": "LOW",       "days": 14, "color": "#06d6a0", "icon": ""},
 ]
 
 CHANDLER_QUOTES: list[str] = [
@@ -110,7 +110,7 @@ def deadline_alerts(tasks: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if days_left < 0:
             urgency = "OVERDUE"
             color = "#c0392b"
-            icon = "🔥"
+            icon = ""
             message = (
                 f'"{title}" was due {abs(days_left)} day(s) ago! '
                 "Submit immediately or contact your instructor."
@@ -131,7 +131,7 @@ def deadline_alerts(tasks: list[dict[str, Any]]) -> list[dict[str, Any]]:
             if not tier_matched:
                 urgency = "FUTURE"
                 color = "#a8d8ea"
-                icon = "📌"
+                icon = ""
                 message = f'"{title}" is due on {due.strftime("%b %d, %Y")} — plan ahead.'
 
         alerts.append({
@@ -170,7 +170,7 @@ def productivity_nudges(routine_logs: list[dict[str, Any]]) -> list[str]:
 
     if not routine_logs:
         nudges.append(
-            "👋 No study sessions logged yet today. "
+            " No study sessions logged yet today. "
             "Start a 25-minute Pomodoro to build momentum!"
         )
         return nudges
@@ -193,7 +193,7 @@ def productivity_nudges(routine_logs: list[dict[str, Any]]) -> list[str]:
     today_str = today.isoformat()
     if today_str not in daily:
         nudges.append(
-            "📝 You haven't logged a session today. "
+            " You haven't logged a session today. "
             "Even a 30-minute review counts — get started!"
         )
 
@@ -210,7 +210,7 @@ def productivity_nudges(routine_logs: list[dict[str, Any]]) -> list[str]:
 
     if len(low_streak) >= 3:
         nudges.append(
-            "😴 Your productivity has been below 6/10 for 3+ days. "
+            " Your productivity has been below 6/10 for 3+ days. "
             "This is a sign of burnout. Take a full rest day and sleep 8+ hours tonight."
         )
 
@@ -226,7 +226,7 @@ def productivity_nudges(routine_logs: list[dict[str, Any]]) -> list[str]:
 
     if len(high_streak) >= 3:
         nudges.append(
-            f"🔥 {len(high_streak)}-day high-productivity streak! "
+            f" {len(high_streak)}-day high-productivity streak! "
             "You're in the zone — keep it up, Chandler!"
         )
 
@@ -234,7 +234,7 @@ def productivity_nudges(routine_logs: list[dict[str, Any]]) -> list[str]:
     for log in routine_logs:
         if int(log.get("duration", 0)) > 180:
             nudges.append(
-                f"⏱️ Session \"{log.get('activity', 'Study')}\" ran for "
+                f" Session \"{log.get('activity', 'Study')}\" ran for "
                 f"{log.get('duration')} minutes. "
                 "Sessions over 90 mins reduce retention — try shorter, focused blocks!"
             )
@@ -242,7 +242,7 @@ def productivity_nudges(routine_logs: list[dict[str, Any]]) -> list[str]:
 
     if not nudges:
         nudges.append(
-            "✅ Everything looks balanced. "
+            " Everything looks balanced. "
             "Keep logging your sessions to get smarter insights!"
         )
 

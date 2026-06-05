@@ -55,7 +55,7 @@ SMS_QUOTE = (
 
 def print_banner() -> None:
     print(BANNER)
-    print(f"  {YELLOW}📣 {SMS_QUOTE}{RESET}\n")
+    print(f"  {YELLOW} {SMS_QUOTE}{RESET}\n")
 
 
 def print_info() -> None:

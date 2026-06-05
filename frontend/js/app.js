@@ -632,13 +632,13 @@ async function optimizeSchedule() {
             // If offline or failed, generate mock optimized variation
             if (!optimized) {
                 optimized = [
-                    { time: "08:00 - 09:30", title: "🎯 Peak Mindset: High Concentration Study", desc: "Solve algorithmic complexity models. Ideal focus window.", type: "study" },
-                    { time: "09:30 - 09:50", title: "☕ Mindful Relaxation", desc: "Short recovery interval. Stay hydrated.", type: "break" },
-                    { time: "09:50 - 12:00", title: "💻 Active Coding & Application", desc: "Work on capstone architecture code block.", type: "project" },
-                    { time: "12:00 - 13:30", title: "🍕 Nutritional Reset Break", desc: "Healthy lunch & motor cortex decompression.", type: "break" },
-                    { time: "13:30 - 15:00", title: "📚 Academic Reading & Comprehension", desc: "Course review and database query writing.", type: "study" },
-                    { time: "15:00 - 15:20", title: "🚶 Active Regeneration", desc: "Quick walk, physical workout.", type: "break" },
-                    { time: "15:20 - 17:00", title: "⚡ Synthetic Integration Session", desc: "Formulate target skill roadmaps and review.", type: "study" }
+                    { time: "08:00 - 09:30", title: " Peak Mindset: High Concentration Study", desc: "Solve algorithmic complexity models. Ideal focus window.", type: "study" },
+                    { time: "09:30 - 09:50", title: " Mindful Relaxation", desc: "Short recovery interval. Stay hydrated.", type: "break" },
+                    { time: "09:50 - 12:00", title: " Active Coding & Application", desc: "Work on capstone architecture code block.", type: "project" },
+                    { time: "12:00 - 13:30", title: " Nutritional Reset Break", desc: "Healthy lunch & motor cortex decompression.", type: "break" },
+                    { time: "13:30 - 15:00", title: " Academic Reading & Comprehension", desc: "Course review and database query writing.", type: "study" },
+                    { time: "15:00 - 15:20", title: " Active Regeneration", desc: "Quick walk, physical workout.", type: "break" },
+                    { time: "15:20 - 17:00", title: " Synthetic Integration Session", desc: "Formulate target skill roadmaps and review.", type: "study" }
                 ];
             }
             

@@ -156,7 +156,7 @@ def run(reset: bool = False) -> None:
     print("=" * 55)
 
     if reset:
-        print("\n⚠️  --reset flag detected. Dropping all tables …")
+        print("\n  --reset flag detected. Dropping all tables …")
         Base.metadata.drop_all(bind=engine)
         print("  Tables dropped.\n")
 
@@ -172,12 +172,12 @@ def run(reset: bool = False) -> None:
             seed_skill_goals(db)
             seed_routine_logs(db)
             db.commit()
-            print("\n✅  Seeding complete!")
+            print("\n  Seeding complete!")
         else:
-            print("\n⚠️  Database already contains data. Use --reset to re-seed.")
+            print("\n  Database already contains data. Use --reset to re-seed.")
     except Exception as exc:
         db.rollback()
-        print(f"\n❌  Error during seeding: {exc}")
+        print(f"\n  Error during seeding: {exc}")
         raise
     finally:
         db.close()

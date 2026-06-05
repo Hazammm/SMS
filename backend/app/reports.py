@@ -145,7 +145,7 @@ class SemesterReport:
         else:
             lines.append("  ➤  Deadlines       : No critical deadlines. Stay proactive!")
 
-        lines.append(f"\n  📣 Quote of the Day: \"{daily_quote(chandler_mode=True)}\"")
+        lines.append(f"\n   Quote of the Day: \"{daily_quote(chandler_mode=True)}\"")
         lines.append(_hr())
         return lines
 
