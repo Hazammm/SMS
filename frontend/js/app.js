@@ -9,7 +9,7 @@ const state = {
     routineLogs: [],
     targetSkills: [],
     isDemoMode: true,
-    apiBase: window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1') 
+    apiBase: (typeof window !== 'undefined' && (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))) 
                ? `${window.location.origin}/api` 
                : 'http://127.0.0.1:8000/api'
 };
@@ -84,6 +84,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             switchTab(targetTab);
         });
     });
+
+    // Setup search filter events
+    document.getElementById('courses-search').addEventListener('input', renderCourses);
+
+    // Category filter toggle events
+    document.querySelectorAll('.btn-filter').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.btn-filter').forEach(el => el.classList.remove('active'));
+            e.target.classList.add('active');
+            renderTasks();
+        });
+    });
 });
 
 // --- Helper Date Creator ---
@@ -148,7 +160,6 @@ function switchTab(tabName) {
 // --- API Client Wrapper & Backend Checker ---
 async function checkBackendConnection() {
     const badge = document.getElementById('connection-badge');
-    const dot = badge.querySelector('.status-dot');
     const text = badge.querySelector('.status-text');
     
     try {
@@ -161,7 +172,7 @@ async function checkBackendConnection() {
         } else {
             throw new Error();
         }
-    } catch (e) {
+    } catch {
         state.isDemoMode = true;
         badge.className = 'connection-status offline';
         text.textContent = 'Demo Mode (Offline)';
@@ -384,7 +395,7 @@ function renderCourses() {
             </div>
             <div class="course-card-footer">
                 <div class="course-gpa-container">
-                    <span class="course-gpa-val">${course.gpa.toFixed(2)}</span>
+                    <span class="course-gpa-val">${Number(course.gpa).toFixed(2)}</span>
                     <span class="course-gpa-label">GPA</span>
                 </div>
                 <span class="course-grade-badge ${course.grade === 'IP' ? 'ip' : ''}">
@@ -395,9 +406,6 @@ function renderCourses() {
         grid.appendChild(card);
     });
 }
-
-// Setup search filter events
-document.getElementById('courses-search').addEventListener('input', renderCourses);
 
 async function deleteCourse(id) {
     if (confirm('Are you sure you want to delete this course?')) {
@@ -426,7 +434,7 @@ function renderTasks() {
         ? state.tasks 
         : state.tasks.filter(t => t.category === activeFilter);
         
-    let counts = { todo: 0, in_progress: 0, completed: 0 };
+    const counts = { todo: 0, in_progress: 0, completed: 0 };
     
     filteredTasks.forEach(task => {
         counts[task.status]++;
@@ -487,18 +495,20 @@ function formatDate(dateStr) {
 }
 
 // Kanban Drag and Drop Logic
-window.allowDrop = function(ev) {
-    ev.preventDefault();
-}
+if (typeof window !== 'undefined') {
+    window.allowDrop = function(ev) {
+        ev.preventDefault();
+    }
 
-window.drag = function(ev, id) {
-    ev.dataTransfer.setData("text", id);
-}
+    window.drag = function(ev, id) {
+        ev.dataTransfer.setData("text", id);
+    }
 
-window.drop = async function(ev, status) {
-    ev.preventDefault();
-    const id = ev.dataTransfer.getData("text");
-    await updateTaskStatus(id, status);
+    window.drop = async function(ev, status) {
+        ev.preventDefault();
+        const id = ev.dataTransfer.getData("text");
+        await updateTaskStatus(id, status);
+    }
 }
 
 async function moveTaskToNextStatus(id, currentStatus) {
@@ -526,15 +536,6 @@ async function deleteTask(id) {
         showToast('Task deleted.', 'info');
     }
 }
-
-// Category filter toggle events
-document.querySelectorAll('.btn-filter').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.btn-filter').forEach(el => el.classList.remove('active'));
-        e.target.classList.add('active');
-        renderTasks();
-    });
-});
 
 // --- Dynamic Rendering: 3. Routine Session Logger & Smart Calendar ---
 function renderRoutineLogs() {
@@ -644,7 +645,7 @@ async function optimizeSchedule() {
             
             renderSmartSchedule(optimized);
             showToast('AI optimization complete. Cognitive peak windows updated!', 'success');
-        } catch(e) {
+        } catch {
             showToast('Schedule compilation failed.', 'danger');
         } finally {
             btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Re-Optimize`;
@@ -815,7 +816,7 @@ function renderTargetSkills() {
 
 async function incrementSkillProgress(id, currentProgress) {
     const newProgress = Math.min(100, currentProgress + 10);
-    const updated = await requestAPI(`/skills/targets/${id}`, 'PUT', { progress: newProgress });
+    await requestAPI(`/skills/targets/${id}`, 'PUT', { progress: newProgress });
     
     state.targetSkills = state.targetSkills.map(s => s.id === id ? { ...s, progress: newProgress } : s);
     renderTargetSkills();
@@ -1012,7 +1013,6 @@ function updateCharts() {
     
     // Update Productivity patterns chart based on routine log history
     const weekdayDurations = [0, 0, 0, 0, 0, 0, 0]; // Mon-Sun cumulative study minutes
-    const weekdaysCount = [0, 0, 0, 0, 0, 0, 0];
     
     state.routineLogs.forEach(log => {
         const d = new Date(log.date);
@@ -1021,7 +1021,6 @@ function updateCharts() {
         
         if (dayIndex >= 0 && dayIndex <= 6) {
             weekdayDurations[dayIndex] += Number(log.duration);
-            weekdaysCount[dayIndex]++;
         }
     });
     
