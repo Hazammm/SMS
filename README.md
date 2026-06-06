@@ -87,7 +87,7 @@ cd SMS
 # Navigate into the backend directory
 cd backend
 
-# Create the virtual environment
+# Create the virtual environment for it
 python -m venv venv
 
 # Activate it
