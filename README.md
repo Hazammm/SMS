@@ -2,8 +2,7 @@
 
 <img src="https://img.shields.io/badge/AuraSMS-Student%20Management%20System-6C63FF?style=for-the-badge&logo=graduation-cap&logoColor=white" alt="AuraSMS Banner"/>
 
-# 🎓 AuraSMS — Premium Student Management System
-
+# 🎓 AuraSMS
 **A full-stack, AI-powered academic companion built with FastAPI & Vanilla JS**
 
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
