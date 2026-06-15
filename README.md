@@ -16,7 +16,7 @@
 
 </div>
 
-## 🚀 Overview
+##  Overview
 
 A **premium, AI-powered Student Management System** designed for Students, featuring:
 
@@ -27,7 +27,7 @@ A **premium, AI-powered Student Management System** designed for Students, featu
 - 📈 **Weekly Reports** — Comprehensive academic performance summaries
 - 🎨 **Glassmorphism UI** — Premium dark-mode dashboard with Chart.js visualisations
 
-## 🛠 Tech Stack
+##  Tech Stack
 
 | Layer | Technology | Purpose |
 |---|---|---|
@@ -41,7 +41,7 @@ A **premium, AI-powered Student Management System** designed for Students, featu
 | **Icons** | Font Awesome 6 | Consistent, premium iconography |
 | **Fonts** | Google Fonts (Outfit, Space Grotesk) | Clean, modern typography |
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 SMS/
@@ -66,7 +66,7 @@ SMS/
 └── LICENSE
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Python **3.10+**
@@ -126,7 +126,7 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 
 > **Note:** On first startup, the database is automatically created and seeded with sample courses, tasks, skill goals, and routine logs so you can explore all features immediately.
 
-## 🧠 ML Architecture
+##  ML Architecture
 
 AuraSMS features two purpose-built ML components, both implemented without heavy model infrastructure — fast, explainable, and lightweight.
 
@@ -190,7 +190,7 @@ Routine Logs (past sessions)  +  Active Tasks
 - Peak focus periods are derived from each student's own historical productivity data
 
 
-## 📄 License
+##  License
 
 This project is licensed under the **MIT License** 
 
