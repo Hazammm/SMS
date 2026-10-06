@@ -19,18 +19,18 @@ from app.config import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize the SQLite database and seed initial mock data
+    # Initialize SQLite database schema and seed mock data
     init_db()
     yield
 
 app = FastAPI(
-    title="Student Management System (SMS) Backend",
-    description="FastAPI Backend with ML-based Skill Recommendations and Routine Optimization.",
-    version="1.0.0",
+    title="AuraSMS Student Management System API",
+    description="FastAPI Backend with ML Skill Recommendations and Adaptive Schedule Optimization.",
+    version="2.0.0",
     lifespan=lifespan
 )
 
-# Enable CORS for frontend requests
+# Enable CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -40,7 +40,7 @@ app.add_middleware(
 )
 
 # ==========================================
-# Pydantic Schemas
+# Pydantic Request/Response Schemas
 # ==========================================
 
 # Course Schemas
@@ -91,7 +91,7 @@ class TaskResponse(TaskBase):
     class Config:
         from_attributes = True
 
-# RoutineLog (Study/Activity Session) Schemas
+# RoutineLog Schemas
 class RoutineLogBase(BaseModel):
     activity: str
     duration: int
@@ -114,7 +114,7 @@ class RoutineLogResponse(RoutineLogBase):
     class Config:
         from_attributes = True
 
-# SkillGoal (Tracked Target Skill) Schemas
+# SkillGoal Schemas
 class SkillGoalBase(BaseModel):
     name: str
     progress: int = 0
@@ -152,7 +152,7 @@ class RecommendResponse(BaseModel):
 @app.get("/api/health")
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "message": "API Connected successfully"}
+    return {"status": "ok", "message": "AuraSMS API engine online and fully functional"}
 
 # ==========================================
 # Endpoints: Course CRUD
@@ -245,7 +245,7 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
     return None
 
 # ==========================================
-# Endpoints: Routine Log (Activity Session) CRUD
+# Endpoints: Routine Log CRUD
 # ==========================================
 @app.post("/api/routine", response_model=RoutineLogResponse, status_code=status.HTTP_201_CREATED)
 @app.post("/routine", response_model=RoutineLogResponse, status_code=status.HTTP_201_CREATED)
@@ -283,7 +283,7 @@ def delete_routine_log(log_id: int, db: Session = Depends(get_db)):
     return None
 
 # ==========================================
-# Endpoints: Tracked Target Skill (SkillGoal) CRUD
+# Endpoints: Skill Goal CRUD
 # ==========================================
 @app.post("/api/skills/targets", response_model=SkillGoalResponse, status_code=status.HTTP_201_CREATED)
 @app.post("/skills/targets", response_model=SkillGoalResponse, status_code=status.HTTP_201_CREATED)
@@ -339,7 +339,7 @@ def delete_skill_goal(goal_id: int, db: Session = Depends(get_db)):
     return None
 
 # ==========================================
-# Endpoints: ML / Schedule Optimization
+# Endpoints: ML & Schedule Optimization
 # ==========================================
 @app.post("/api/recommend-skills", response_model=List[RecommendResponse])
 def get_recommendations(req: RecommendRequest):
@@ -347,7 +347,7 @@ def get_recommendations(req: RecommendRequest):
         recs = recommend_skills(req.career_objective, req.num_recommendations)
         return recs
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Recommendation engine failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Recommendation engine error: {str(e)}")
 
 @app.get("/api/schedule/daily")
 @app.get("/schedule/daily")
@@ -358,7 +358,6 @@ def get_optimized_schedule(db: Session = Depends(get_db)):
         active_tasks = db.query(Task).filter(Task.status != "completed").all()
         opt_data = optimize_schedule(routine_logs, active_tasks)
         
-        # Format study slots as expected by the frontend
         mapped_schedule = []
         for item in opt_data["schedule"]:
             mapped_schedule.append({
@@ -369,14 +368,13 @@ def get_optimized_schedule(db: Session = Depends(get_db)):
             })
         return mapped_schedule
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Routine optimizer failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Routine optimizer error: {str(e)}")
 
 # ==========================================
 # Endpoints: Analytics
 # ==========================================
 @app.get("/api/analytics/gpa")
 def get_gpa_analytics(db: Session = Depends(get_db)):
-    """Return weighted GPA, grade distribution, and a GPA histogram."""
     courses = db.query(Course).all()
     course_dicts = [{"code": c.code, "name": c.name, "credits": c.credits, "grade": c.grade, "gpa": c.gpa} for c in courses]
     return {
@@ -387,14 +385,12 @@ def get_gpa_analytics(db: Session = Depends(get_db)):
 
 @app.get("/api/analytics/efficiency")
 def get_study_efficiency(db: Session = Depends(get_db)):
-    """Return per-session and overall study efficiency scores."""
     logs = db.query(RoutineLog).all()
     log_dicts = [{"activity": l.activity, "duration": l.duration, "productivity": l.productivity, "date": l.date, "category": l.category} for l in logs]
     return study_efficiency_score(log_dicts)
 
 @app.get("/api/analytics/burnout")
 def get_burnout_risk(db: Session = Depends(get_db)):
-    """Return burnout risk level and advice based on this week's logs."""
     logs = db.query(RoutineLog).all()
     log_dicts = [{"activity": l.activity, "duration": l.duration, "productivity": l.productivity, "date": l.date, "category": l.category} for l in logs]
     return burnout_risk(log_dicts)
@@ -404,29 +400,25 @@ def get_burnout_risk(db: Session = Depends(get_db)):
 # ==========================================
 @app.get("/api/notifications/alerts")
 def get_deadline_alerts(db: Session = Depends(get_db)):
-    """Return urgency-sorted deadline alerts for all non-completed tasks."""
     tasks = db.query(Task).filter(Task.status != "completed").all()
     task_dicts = [{"id": t.id, "title": t.title, "due_date": t.due_date, "status": t.status, "priority": t.priority, "category": t.category} for t in tasks]
     return deadline_alerts(task_dicts)
 
 @app.get("/api/notifications/nudges")
 def get_productivity_nudges(db: Session = Depends(get_db)):
-    """Return personalised productivity nudges based on recent session logs."""
     logs = db.query(RoutineLog).all()
     log_dicts = [{"activity": l.activity, "duration": l.duration, "productivity": l.productivity, "date": l.date} for l in logs]
     return {"nudges": productivity_nudges(log_dicts)}
 
 @app.get("/api/notifications/quote")
 def get_daily_quote(chandler_mode: bool = True):
-    """Return today's motivational (or Chandler Bing) quote."""
     return {"quote": daily_quote(chandler_mode=chandler_mode)}
 
 # ==========================================
-# Endpoints: Reports & Streak
+# Endpoints: Reports & Student Profile
 # ==========================================
 @app.get("/api/report/weekly")
 def get_weekly_report(db: Session = Depends(get_db)):
-    """Return a comprehensive weekly performance report."""
     courses = db.query(Course).all()
     logs = db.query(RoutineLog).all()
     tasks = db.query(Task).all()
@@ -437,14 +429,12 @@ def get_weekly_report(db: Session = Depends(get_db)):
 
 @app.get("/api/streak")
 def get_study_streak(db: Session = Depends(get_db)):
-    """Return current and longest study streak counts."""
     logs = db.query(RoutineLog).all()
     log_dicts = [{"date": l.date} for l in logs]
     return study_streak(log_dicts)
 
 @app.get("/api/student/profile")
 def get_student_profile():
-    """Return the student profile configuration (name, avatar, role)."""
     return {
         "name": settings.student.default_name,
         "role": settings.student.default_role,
@@ -453,7 +443,7 @@ def get_student_profile():
     }
 
 # ==========================================
-# Static Files Server Mount (SPA Mode)
+# Static Frontend Serving
 # ==========================================
 frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "frontend"))
 if os.path.exists(frontend_dir):

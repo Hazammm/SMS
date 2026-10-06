@@ -1,8 +1,7 @@
 import os
 from datetime import date, datetime, timedelta
-from sqlalchemy import create_engine, Column, Integer, Float, String, Text
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine, Column, Integer, Float, String, Text, Boolean
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'sms.db')}"
@@ -18,8 +17,8 @@ class Course(Base):
     code = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=False)
     credits = Column(Integer, nullable=False)
-    grade = Column(String, nullable=False)  # "A+", "A", "B", "IP", etc.
-    gpa = Column(Float, nullable=False)     # 4.00, 3.70, etc.
+    grade = Column(String, nullable=False)  # e.g., "A+", "A", "B+", "IP"
+    gpa = Column(Float, nullable=False)     # e.g., 4.00, 3.70, 3.30
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -38,7 +37,7 @@ class RoutineLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     activity = Column(String, nullable=False)
     duration = Column(Integer, nullable=False)     # in minutes
-    productivity = Column(Integer, nullable=False)   # 1-10
+    productivity = Column(Integer, nullable=False)   # 1 to 10 scale
     date = Column(String, nullable=False)           # YYYY-MM-DD
     category = Column(String, nullable=False)       # "study", "project", "revision", "class"
 
@@ -47,7 +46,7 @@ class SkillGoal(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    progress = Column(Integer, default=0, nullable=False)
+    progress = Column(Integer, default=0, nullable=False)  # 0 to 100 percentage
     goal = Column(String, nullable=False)
 
 def get_db():
@@ -62,13 +61,10 @@ def get_future_date_str(days_offset: int) -> str:
     return d.isoformat()
 
 def init_db():
-    # If the database file exists, let's make sure it represents the updated tables
-    # For a fresh startup we can create all
     Base.metadata.create_all(bind=engine)
     
     db = SessionLocal()
     try:
-        # Seed Courses
         if db.query(Course).first() is None:
             courses = [
                 Course(code="CS-401", name="Artificial Intelligence & Neural Networks", credits=3, grade="A", gpa=4.00),
@@ -76,10 +72,11 @@ def init_db():
                 Course(code="CS-305", name="Database Management Systems", credits=3, grade="B+", gpa=3.30),
                 Course(code="MAT-201", name="Linear Algebra & Applications", credits=3, grade="A", gpa=4.00),
                 Course(code="CS-499", name="Capstone Project Phase I", credits=3, grade="IP", gpa=4.00),
+                Course(code="CS-210", name="Operating Systems Architecture", credits=3, grade="B", gpa=3.00),
+                Course(code="CS-350", name="Computer Networks & Distributed Systems", credits=3, grade="A-", gpa=3.70),
             ]
             db.add_all(courses)
             
-            # Seed Tasks
             tasks = [
                 Task(
                     title="Implement backpropagation neural network in NumPy",
@@ -120,32 +117,41 @@ def init_db():
                     category="study",
                     due_date=get_future_date_str(-1),
                     status="completed"
+                ),
+                Task(
+                    title="OS Lab — Shell Script Automation",
+                    description="Write Bash scripts to automate process monitoring and log parsing.",
+                    priority="medium",
+                    category="assignment",
+                    due_date=get_future_date_str(7),
+                    status="todo"
                 )
             ]
             db.add_all(tasks)
             
-            # Seed Skill Goals
             skills = [
                 SkillGoal(name="Deep Learning (PyTorch)", progress=65, goal="AI Engineer"),
                 SkillGoal(name="Relational DB Normalization", progress=85, goal="Database Systems"),
-                SkillGoal(name="Docker Containerization", progress=30, goal="DevOps Architect")
+                SkillGoal(name="Docker Containerization", progress=30, goal="DevOps Architect"),
+                SkillGoal(name="React & Modern Frontend Architecture", progress=55, goal="Full-Stack Developer"),
+                SkillGoal(name="AWS Cloud Practitioner Essentials", progress=20, goal="Cloud Engineer")
             ]
             db.add_all(skills)
             
-            # Seed Routine Logs
             routine_logs = [
                 RoutineLog(activity="Deep Work: Backpropagation Neural Net Coding", duration=120, productivity=9, date=get_future_date_str(0), category="project"),
                 RoutineLog(activity="Lecture: Database Systems normalization study", duration=90, productivity=8, date=get_future_date_str(0), category="study"),
                 RoutineLog(activity="Midterm Revision: Practice Exam Session", duration=150, productivity=7, date=get_future_date_str(-1), category="revision"),
                 RoutineLog(activity="Linear Algebra: Problem sets on eigenvectors", duration=60, productivity=9, date=get_future_date_str(-2), category="study"),
-                RoutineLog(activity="Capstone Team Standup & Backlog Grooming", duration=45, productivity=6, date=get_future_date_str(-2), category="class")
+                RoutineLog(activity="Capstone Team Standup & Backlog Grooming", duration=45, productivity=6, date=get_future_date_str(-2), category="class"),
+                RoutineLog(activity="LeetCode Practice: Arrays & Strings", duration=75, productivity=8, date=get_future_date_str(-3), category="study")
             ]
             db.add_all(routine_logs)
             
             db.commit()
     except Exception as e:
         db.rollback()
-        print(f"Error seeding database: {e}")
+        print(f"Error initializing database: {e}")
         raise e
     finally:
         db.close()

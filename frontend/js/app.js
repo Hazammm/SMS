@@ -2,7 +2,7 @@
    AuraSMS APPLICATION LOGIC (app.js)
    ========================================================================== */
 
-// --- Global Application State ---
+// Global State Management
 const state = {
     courses: [],
     tasks: [],
@@ -14,7 +14,7 @@ const state = {
                : 'http://127.0.0.1:8000/api'
 };
 
-// --- Mock Preloaded Data (For Offline Standalone Demo Mode) ---
+// Mock Preloaded Data (Standalone Fallback Demo Mode)
 const MOCK_DATA = {
     courses: [
         { id: "c1", code: "CS-401", name: "Artificial Intelligence & Neural Networks", credits: 3, grade: "A", gpa: 4.00 },
@@ -43,21 +43,28 @@ const MOCK_DATA = {
         { id: "s3", name: "Docker Containerization", progress: 30, goal: "DevOps Architect" }
     ],
     schedule: [
-        { time: "08:30 - 10:00", title: "Cognitive Peak: Deep Study Focus", desc: "Machine Learning theoretical derivations and math proofs.", type: "study" },
+        { time: "08:30 - 10:00", title: "Cognitive Peak: Deep Focus Study", desc: "Machine Learning theoretical derivations and math proofs.", type: "study" },
         { time: "10:00 - 10:20", title: "Tactical Break", desc: "Hydration, light stretching, screen off.", type: "break" },
         { time: "10:20 - 12:30", title: "Technical Application Work", desc: "Coding tasks for Capstone Project & Python assignments.", type: "project" },
         { time: "12:30 - 14:00", title: "Recess & Cognitive Reset", desc: "Lunch and physical walk outdoors.", type: "break" },
         { time: "14:00 - 15:30", title: "Systems Review & DBMS", desc: "Database query writing and theory revision.", type: "study" },
         { time: "15:30 - 15:50", title: "Afternoon Refreshment", desc: "Quick snack or mindfulness meditation.", type: "break" },
-        { time: "15:50 - 17:30", title: "Active Recall & Mock Interview prep", desc: "Solving algorithmic problems and review exercises.", type: "study" }
+        { time: "15:50 - 17:30", title: "Active Recall & Problem Sets", desc: "Solving algorithmic problems and review exercises.", type: "study" }
     ]
 };
 
-// --- Chart Instances ---
+// Chart Instances
 let gpaChartInstance = null;
 let productivityChartInstance = null;
 
-// --- Initialize App ---
+// Helper Date Creator
+function getFutureDate(daysOffset) {
+    const d = new Date();
+    d.setDate(d.getDate() + daysOffset);
+    return d.toISOString().split('T')[0];
+}
+
+// App Initialization
 document.addEventListener('DOMContentLoaded', async () => {
     initNavigation();
     initModals();
@@ -66,18 +73,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     initForms();
     initCharts();
     
-    // Quick Event Listeners
+    // Event Listeners
     document.getElementById('generate-schedule-btn').addEventListener('click', optimizeSchedule);
     document.getElementById('btn-recommend-skills').addEventListener('click', generateAISkills);
     
-    // Setup Skill suggestions
+    // Skill suggestions
     document.querySelectorAll('.suggestion-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             document.getElementById('career-goal').value = chip.textContent;
         });
     });
 
-    // Setup tab redirects from dashboard cards
+    // Tab redirects from dashboard cards
     document.querySelectorAll('.btn-view-tab').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const targetTab = e.currentTarget.getAttribute('data-tab');
@@ -85,10 +92,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Setup search filter events
+    // Search input for courses
     document.getElementById('courses-search').addEventListener('input', renderCourses);
 
-    // Category filter toggle events
+    // Category filter toggles
     document.querySelectorAll('.btn-filter').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.btn-filter').forEach(el => el.classList.remove('active'));
@@ -98,14 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-// --- Helper Date Creator ---
-function getFutureDate(daysOffset) {
-    const d = new Date();
-    d.setDate(d.getDate() + daysOffset);
-    return d.toISOString().split('T')[0];
-}
-
-// --- Navigation Controller ---
+// Navigation Controller
 function initNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
@@ -118,17 +118,20 @@ function initNavigation() {
 }
 
 function switchTab(tabName) {
-    // Update Sidebar Navigation highlights
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.remove('active');
+        el.setAttribute('aria-selected', 'false');
+    });
     const targetNav = document.querySelector(`.nav-item[data-tab="${tabName}"]`);
-    if (targetNav) targetNav.classList.add('active');
+    if (targetNav) {
+        targetNav.classList.add('active');
+        targetNav.setAttribute('aria-selected', 'true');
+    }
 
-    // Toggle Content Sections
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     const targetTab = document.getElementById(`tab-${tabName}`);
     if (targetTab) targetTab.classList.add('active');
 
-    // Update Header Text
     const pageTitle = document.getElementById('page-title');
     const pageSubtitle = document.getElementById('page-subtitle');
     
@@ -140,7 +143,7 @@ function switchTab(tabName) {
             break;
         case 'courses':
             pageTitle.textContent = 'Academic Courses';
-            pageSubtitle.textContent = 'Manage your curriculum, track credits, and calculate term GPA.';
+            pageSubtitle.textContent = 'Manage your curriculum, track credit hours, and calculate term GPA.';
             break;
         case 'tasks':
             pageTitle.textContent = 'Task Board';
@@ -148,16 +151,16 @@ function switchTab(tabName) {
             break;
         case 'routine':
             pageTitle.textContent = 'Routine & Planner';
-            pageSubtitle.textContent = 'Log actual study times and review cognitive schedule peak analysis.';
+            pageSubtitle.textContent = 'Log study sessions and review adaptive cognitive schedule peak analysis.';
             break;
         case 'skills':
             pageTitle.textContent = 'Skill Recommender AI';
-            pageSubtitle.textContent = 'Generate highly customized roadmap plans utilizing AI capabilities.';
+            pageSubtitle.textContent = 'Generate customized learning roadmaps using TF-IDF AI capabilities.';
             break;
     }
 }
 
-// --- API Client Wrapper & Backend Checker ---
+// API Connection Checker & HTTP Wrapper
 async function checkBackendConnection() {
     const badge = document.getElementById('connection-badge');
     const text = badge.querySelector('.status-text');
@@ -182,7 +185,6 @@ async function checkBackendConnection() {
 
 async function requestAPI(endpoint, method = 'GET', body = null) {
     if (state.isDemoMode) {
-        // Fallback to reading and writing via LocalStorage
         return handleLocalStorageFallback(endpoint, method, body);
     }
     
@@ -207,12 +209,11 @@ async function requestAPI(endpoint, method = 'GET', body = null) {
     }
 }
 
-// --- LocalStorage Fallback Handler ---
+// LocalStorage Fallback Handler
 function handleLocalStorageFallback(endpoint, method, body) {
     const getStorage = (key) => JSON.parse(localStorage.getItem(`aura_${key}`)) || MOCK_DATA[key];
     const setStorage = (key, data) => localStorage.setItem(`aura_${key}`, JSON.stringify(data));
     
-    // Parse endpoints
     if (endpoint.startsWith('/courses')) {
         let list = getStorage('courses');
         if (method === 'GET') return list;
@@ -224,7 +225,7 @@ function handleLocalStorageFallback(endpoint, method, body) {
         }
         if (method === 'DELETE') {
             const courseId = endpoint.split('/').pop();
-            list = list.filter(c => c.id !== courseId);
+            list = list.filter(c => String(c.id) !== String(courseId));
             setStorage('courses', list);
             return { status: "success" };
         }
@@ -241,13 +242,13 @@ function handleLocalStorageFallback(endpoint, method, body) {
         }
         if (method.startsWith('PUT')) {
             const taskId = endpoint.split('/').pop();
-            list = list.map(t => t.id === taskId ? { ...t, ...body } : t);
+            list = list.map(t => String(t.id) === String(taskId) ? { ...t, ...body } : t);
             setStorage('tasks', list);
-            return list.find(t => t.id === taskId);
+            return list.find(t => String(t.id) === String(taskId));
         }
         if (method === 'DELETE') {
             const taskId = endpoint.split('/').pop();
-            list = list.filter(t => t.id !== taskId);
+            list = list.filter(t => String(t.id) !== String(taskId));
             setStorage('tasks', list);
             return { status: "success" };
         }
@@ -264,7 +265,7 @@ function handleLocalStorageFallback(endpoint, method, body) {
         }
         if (method === 'DELETE') {
             const logId = endpoint.split('/').pop();
-            list = list.filter(r => r.id !== logId);
+            list = list.filter(r => String(r.id) !== String(logId));
             setStorage('routineLogs', list);
             return { status: "success" };
         }
@@ -281,13 +282,13 @@ function handleLocalStorageFallback(endpoint, method, body) {
         }
         if (method.startsWith('PUT')) {
             const skillId = endpoint.split('/').pop();
-            list = list.map(s => s.id === skillId ? { ...s, ...body } : s);
+            list = list.map(s => String(s.id) === String(skillId) ? { ...s, ...body } : s);
             setStorage('targetSkills', list);
-            return list.find(s => s.id === skillId);
+            return list.find(s => String(s.id) === String(skillId));
         }
         if (method === 'DELETE') {
             const skillId = endpoint.split('/').pop();
-            list = list.filter(s => s.id !== skillId);
+            list = list.filter(s => String(s.id) !== String(skillId));
             setStorage('targetSkills', list);
             return { status: "success" };
         }
@@ -300,7 +301,7 @@ function handleLocalStorageFallback(endpoint, method, body) {
     return null;
 }
 
-// --- Data Loader ---
+// Initial Data Loader
 async function loadInitialData() {
     try {
         state.courses = await requestAPI('/courses');
@@ -319,9 +320,8 @@ async function loadInitialData() {
     }
 }
 
-// --- Global Metrics Logic ---
+// Global Metrics Calculation
 function updateGlobalStats() {
-    // 1. GPA Calculation
     const completedCourses = state.courses.filter(c => c.grade !== 'IP');
     let totalCredits = 0;
     let totalGPAPoints = 0;
@@ -333,18 +333,15 @@ function updateGlobalStats() {
     
     const computedGPA = totalCredits > 0 ? (totalGPAPoints / totalCredits).toFixed(2) : '0.00';
     
-    // Update labels
     document.getElementById('header-gpa').textContent = computedGPA;
     document.getElementById('metric-gpa').textContent = computedGPA;
     
-    // 2. Study Hours Sum
     const totalMinutes = state.routineLogs.reduce((acc, log) => acc + Number(log.duration), 0);
     const totalHours = (totalMinutes / 60).toFixed(1);
     
     document.getElementById('header-study-hours').textContent = `${totalHours}h`;
     document.getElementById('metric-study-hours').textContent = `${totalHours}h`;
     
-    // 3. Task Completion Rate
     const completedTasks = state.tasks.filter(t => t.status === 'completed').length;
     const totalTasks = state.tasks.length;
     const taskRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -352,11 +349,10 @@ function updateGlobalStats() {
     document.getElementById('header-tasks').textContent = `${taskRate}%`;
     document.getElementById('metric-task-rate').textContent = `${taskRate}%`;
     
-    // 4. Target Skills Count
     document.getElementById('metric-skills').textContent = state.targetSkills.length;
 }
 
-// --- Dynamic Rendering: 1. Courses Section ---
+// Rendering: Courses
 function renderCourses() {
     const grid = document.getElementById('courses-grid');
     const searchVal = document.getElementById('courses-search').value.toLowerCase();
@@ -384,7 +380,7 @@ function renderCourses() {
             <div class="course-card-header">
                 <span class="course-code-badge">${course.code}</span>
                 <div class="course-actions">
-                    <button class="btn-card-action" onclick="deleteCourse('${course.id}')" title="Delete Course">
+                    <button class="btn-card-action" onclick="deleteCourse('${course.id}')" title="Delete Course" aria-label="Delete Course ${course.code}">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -410,7 +406,7 @@ function renderCourses() {
 async function deleteCourse(id) {
     if (confirm('Are you sure you want to delete this course?')) {
         await requestAPI(`/courses/${id}`, 'DELETE');
-        state.courses = state.courses.filter(c => c.id !== id);
+        state.courses = state.courses.filter(c => String(c.id) !== String(id));
         renderCourses();
         updateGlobalStats();
         updateCharts();
@@ -418,7 +414,7 @@ async function deleteCourse(id) {
     }
 }
 
-// --- Dynamic Rendering: 2. Tasks Kanban Board ---
+// Rendering: Tasks Kanban Board
 function renderTasks() {
     const todoCards = document.getElementById('todo-cards');
     const inprogressCards = document.getElementById('inprogress-cards');
@@ -428,7 +424,6 @@ function renderTasks() {
     inprogressCards.innerHTML = '';
     completedCards.innerHTML = '';
     
-    // Category filters
     const activeFilter = document.querySelector('.btn-filter.active').getAttribute('data-filter');
     const filteredTasks = activeFilter === 'all' 
         ? state.tasks 
@@ -437,7 +432,7 @@ function renderTasks() {
     const counts = { todo: 0, in_progress: 0, completed: 0 };
     
     filteredTasks.forEach(task => {
-        counts[task.status]++;
+        counts[task.status] = (counts[task.status] || 0) + 1;
         
         const card = document.createElement('div');
         card.className = `task-card glass-panel ${task.priority}`;
@@ -458,11 +453,11 @@ function renderTasks() {
                 </span>
                 <div class="task-actions">
                     ${task.status !== 'completed' ? `
-                        <button class="btn-task-action" onclick="moveTaskToNextStatus('${task.id}', '${task.status}')" title="Advance Stage">
+                        <button class="btn-task-action" onclick="moveTaskToNextStatus('${task.id}', '${task.status}')" title="Advance Stage" aria-label="Advance task stage">
                             <i class="fa-solid fa-chevron-right"></i>
                         </button>
                     ` : ''}
-                    <button class="btn-task-action delete" onclick="deleteTask('${task.id}')" title="Delete Task">
+                    <button class="btn-task-action delete" onclick="deleteTask('${task.id}')" title="Delete Task" aria-label="Delete task">
                         <i class="fa-solid fa-circle-minus"></i>
                     </button>
                 </div>
@@ -474,12 +469,10 @@ function renderTasks() {
         else if (task.status === 'completed') completedCards.appendChild(card);
     });
     
-    // Update Counter badges
     document.getElementById('todo-count').textContent = counts.todo;
     document.getElementById('inprogress-count').textContent = counts.in_progress;
     document.getElementById('completed-count').textContent = counts.completed;
     
-    // Also render the quick tasks overview on the overview dashboard
     renderQuickTasksPeek();
 }
 
@@ -517,7 +510,7 @@ async function moveTaskToNextStatus(id, currentStatus) {
 }
 
 async function updateTaskStatus(id, newStatus) {
-    const task = state.tasks.find(t => t.id === id);
+    const task = state.tasks.find(t => String(t.id) === String(id));
     if (!task) return;
     
     task.status = newStatus;
@@ -530,14 +523,14 @@ async function updateTaskStatus(id, newStatus) {
 async function deleteTask(id) {
     if (confirm('Are you sure you want to delete this task?')) {
         await requestAPI(`/tasks/${id}`, 'DELETE');
-        state.tasks = state.tasks.filter(t => t.id !== id);
+        state.tasks = state.tasks.filter(t => String(t.id) !== String(id));
         renderTasks();
         updateGlobalStats();
         showToast('Task deleted.', 'info');
     }
 }
 
-// --- Dynamic Rendering: 3. Routine Session Logger & Smart Calendar ---
+// Rendering: Routine Logs & AI Schedule
 function renderRoutineLogs() {
     const list = document.getElementById('routine-logs-list');
     list.innerHTML = '';
@@ -547,7 +540,6 @@ function renderRoutineLogs() {
         return;
     }
     
-    // Sort logs descending by date
     const sortedLogs = [...state.routineLogs].sort((a, b) => new Date(b.date) - new Date(a.date));
     
     sortedLogs.forEach(log => {
@@ -562,7 +554,7 @@ function renderRoutineLogs() {
                 <span class="prod-score ${getProductivityClass(log.productivity)}">
                     Focus: ${log.productivity}/10
                 </span>
-                <button class="btn-delete-session" onclick="deleteRoutineLog('${log.id}')" title="Delete Log">
+                <button class="btn-delete-session" onclick="deleteRoutineLog('${log.id}')" title="Delete Log" aria-label="Delete log">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
             </div>
@@ -581,7 +573,7 @@ function getProductivityClass(score) {
 async function deleteRoutineLog(id) {
     if (confirm('Delete this logged activity session?')) {
         await requestAPI(`/routine/${id}`, 'DELETE');
-        state.routineLogs = state.routineLogs.filter(r => r.id !== id);
+        state.routineLogs = state.routineLogs.filter(r => String(r.id) !== String(id));
         renderRoutineLogs();
         updateGlobalStats();
         updateCharts();
@@ -589,14 +581,12 @@ async function deleteRoutineLog(id) {
     }
 }
 
-// Smart Schedule Builder / Optimizer
 async function renderSmartSchedule(customSchedule = null) {
     const timeline = document.getElementById('schedule-timeline');
     timeline.innerHTML = '';
     
     const scheduleItems = customSchedule || MOCK_DATA.schedule;
     
-    // Update dates
     const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
     document.getElementById('schedule-current-date').textContent = currentDate;
     
@@ -611,7 +601,6 @@ async function renderSmartSchedule(customSchedule = null) {
         timeline.appendChild(node);
     });
     
-    // Also update overview dashboard quick peek
     renderQuickSchedulePeek(scheduleItems);
 }
 
@@ -620,26 +609,23 @@ async function optimizeSchedule() {
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Synthesizing...`;
     btn.disabled = true;
     
-    // Simulate AI Optimization
     setTimeout(async () => {
         try {
-            // Check API
             let optimized = null;
             if (!state.isDemoMode) {
                 const response = await fetch(`${state.apiBase}/schedule/daily`);
                 if (response.ok) optimized = await response.json();
             }
             
-            // If offline or failed, generate mock optimized variation
             if (!optimized) {
                 optimized = [
-                    { time: "08:00 - 09:30", title: " Peak Mindset: High Concentration Study", desc: "Solve algorithmic complexity models. Ideal focus window.", type: "study" },
-                    { time: "09:30 - 09:50", title: " Mindful Relaxation", desc: "Short recovery interval. Stay hydrated.", type: "break" },
-                    { time: "09:50 - 12:00", title: " Active Coding & Application", desc: "Work on capstone architecture code block.", type: "project" },
-                    { time: "12:00 - 13:30", title: " Nutritional Reset Break", desc: "Healthy lunch & motor cortex decompression.", type: "break" },
-                    { time: "13:30 - 15:00", title: " Academic Reading & Comprehension", desc: "Course review and database query writing.", type: "study" },
-                    { time: "15:00 - 15:20", title: " Active Regeneration", desc: "Quick walk, physical workout.", type: "break" },
-                    { time: "15:20 - 17:00", title: " Synthetic Integration Session", desc: "Formulate target skill roadmaps and review.", type: "study" }
+                    { time: "08:00 - 09:30", title: "Peak Mindset: High Concentration Focus", desc: "Solve algorithmic complexity models. Ideal cognitive focus window.", type: "study" },
+                    { time: "09:30 - 09:50", title: "Tactical Recovery Break", desc: "Hydration, light stretching, screen off.", type: "break" },
+                    { time: "09:50 - 12:00", title: "Active Hands-on Coding", desc: "Work on capstone architecture code block and Neural Net assignments.", type: "project" },
+                    { time: "12:00 - 13:30", title: "Nutritional & Physical Reset", desc: "Healthy lunch & motor cortex decompression walk.", type: "break" },
+                    { time: "13:30 - 15:00", title: "Systems Review & DBMS Queries", desc: "Database normalization and query optimization review.", type: "study" },
+                    { time: "15:00 - 15:20", title: "Active Regeneration", desc: "Quick outdoor walk or light workout.", type: "break" },
+                    { time: "15:20 - 17:00", title: "Synthetic Integration & Practice", desc: "Formulate target skill roadmaps and flashcard review.", type: "study" }
                 ];
             }
             
@@ -654,71 +640,89 @@ async function optimizeSchedule() {
     }, 1200);
 }
 
-// --- Dynamic Rendering: 4. Skills Recommender AI ---
+// Rendering: Skill AI Recommender
 async function generateAISkills() {
     const input = document.getElementById('career-goal');
     const goalVal = input.value.trim();
     
     if (!goalVal) {
-        showToast('Please type in a career goal/role first.', 'warning');
+        showToast('Please enter a target career goal or role first.', 'warning');
         return;
     }
     
     const resultsContainer = document.getElementById('skills-results');
     
-    // Set loading skeleton status
     resultsContainer.innerHTML = `
         <div class="empty-state" style="padding: 20px;">
             <i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: var(--color-cyan); margin-bottom: 14px;"></i>
-            <h4>Synthesizing Roadmaps...</h4>
-            <p>Analyzing industry competencies and local academic prerequisites.</p>
+            <h4>Synthesizing Learning Track...</h4>
+            <p>Analyzing industry skill tags and TF-IDF relevance scores.</p>
         </div>
     `;
     
-    // Simulate AI synthesis
-    setTimeout(() => {
+    setTimeout(async () => {
         let skills = [];
         
-        // Custom smart answers based on query tags
-        const q = goalVal.toLowerCase();
-        if (q.includes('ai') || q.includes('machine') || q.includes('data')) {
-            skills = [
-                { name: "Supervised Learning Models", hours: 45, difficulty: "Intermediate", relevance: 98, resources: ["Andrew Ng Course", "Scikit-Learn Docs"] },
-                { name: "Deep Neural Network Design (PyTorch)", hours: 60, difficulty: "Advanced", relevance: 95, resources: ["PyTorch Tutorials", "Fast.ai Practical Course"] },
-                { name: "Vector Databases & LLM Integration", hours: 30, difficulty: "Advanced", relevance: 89, resources: ["Pinecone Handbook", "LangChain Notebooks"] },
-                { name: "Dimensionality Reduction & PCA Analysis", hours: 25, difficulty: "Intermediate", relevance: 82, resources: ["Linear Algebra Lectures", "StatQuest Youtube"] }
-            ];
-        } else if (q.includes('devops') || q.includes('cloud') || q.includes('infrastructure')) {
-            skills = [
-                { name: "Docker Containerization & Orchestration", hours: 35, difficulty: "Intermediate", relevance: 96, resources: ["Docker Guide", "TechWorld with Nana"] },
-                { name: "Kubernetes Pod Lifecycle & Deployments", hours: 55, difficulty: "Advanced", relevance: 92, resources: ["K8s Official Docs", "CKA Certification Path"] },
-                { name: "Infrastructure as Code (Terraform)", hours: 40, difficulty: "Advanced", relevance: 88, resources: ["Terraform Up & Running", "HashiCorp Learn"] },
-                { name: "CI/CD Pipeline Construction (GitHub Actions)", hours: 20, difficulty: "Easy", relevance: 85, resources: ["Git Automation Guide", "FreeCodeCamp Devops"] }
-            ];
-        } else if (q.includes('react') || q.includes('frontend') || q.includes('fullstack') || q.includes('web')) {
-            skills = [
-                { name: "State Architecture (Redux & React Query)", hours: 30, difficulty: "Intermediate", relevance: 95, resources: ["Redux Toolkit Docs", "Kent C. Dodds Guides"] },
-                { name: "TypeScript Type Safety & Interfaces", hours: 25, difficulty: "Intermediate", relevance: 92, resources: ["TypeScript Deep Dive", "TS Playground"] },
-                { name: "Node.js REST API Architecture", hours: 40, difficulty: "Intermediate", relevance: 87, resources: ["Express.js Guide", "The Net Ninja Playlist"] },
-                { name: "Database Query Optimization (SQL)", hours: 30, difficulty: "Intermediate", relevance: 80, resources: ["SQL Performance Explained", "PostgreSQL Tutorial"] }
-            ];
-        } else {
-            // Default General Software Engineering Track
-            skills = [
-                { name: "Algorithms & Complex Data Structures", hours: 60, difficulty: "Intermediate", relevance: 90, resources: ["LeetCode Study Plan", "MIT Introduction to Algorithms"] },
-                { name: "Git Workflow & Repository Integrity", hours: 15, difficulty: "Easy", relevance: 88, resources: ["Pro Git Book", "GitHub Interactive Sandbox"] },
-                { name: "System Design & Microservices Principles", hours: 50, difficulty: "Advanced", relevance: 85, resources: ["Designing Data-Intensive Apps", "ByteByteGo System Design"] }
-            ];
+        if (!state.isDemoMode) {
+            try {
+                const response = await fetch(`${state.apiBase}/recommend-skills`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ career_objective: goalVal, num_recommendations: 4 })
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    skills = data.map(item => ({
+                        name: item.title,
+                        hours: 40,
+                        difficulty: "Intermediate",
+                        relevance: Math.round(item.score * 100) || 88,
+                        resources: item.skills.slice(0, 3)
+                    }));
+                }
+            } catch(e) {
+                console.error("AI Recommender fetch error:", e);
+            }
         }
         
-        // Render generated cards
+        if (skills.length === 0) {
+            const q = goalVal.toLowerCase();
+            if (q.includes('ai') || q.includes('machine') || q.includes('data')) {
+                skills = [
+                    { name: "Supervised Learning Models", hours: 45, difficulty: "Intermediate", relevance: 98, resources: ["Andrew Ng Course", "Scikit-Learn Docs"] },
+                    { name: "Deep Neural Network Design (PyTorch)", hours: 60, difficulty: "Advanced", relevance: 95, resources: ["PyTorch Tutorials", "Fast.ai Practical Course"] },
+                    { name: "Vector Databases & LLM Integration", hours: 30, difficulty: "Advanced", relevance: 89, resources: ["Pinecone Handbook", "LangChain Notebooks"] },
+                    { name: "Dimensionality Reduction & PCA Analysis", hours: 25, difficulty: "Intermediate", relevance: 82, resources: ["Linear Algebra Lectures", "StatQuest Youtube"] }
+                ];
+            } else if (q.includes('devops') || q.includes('cloud') || q.includes('infrastructure')) {
+                skills = [
+                    { name: "Docker Containerization & Orchestration", hours: 35, difficulty: "Intermediate", relevance: 96, resources: ["Docker Guide", "TechWorld with Nana"] },
+                    { name: "Kubernetes Pod Lifecycle & Deployments", hours: 55, difficulty: "Advanced", relevance: 92, resources: ["K8s Official Docs", "CKA Certification Path"] },
+                    { name: "Infrastructure as Code (Terraform)", hours: 40, difficulty: "Advanced", relevance: 88, resources: ["Terraform Up & Running", "HashiCorp Learn"] },
+                    { name: "CI/CD Pipeline Construction (GitHub Actions)", hours: 20, difficulty: "Easy", relevance: 85, resources: ["Git Automation Guide", "FreeCodeCamp Devops"] }
+                ];
+            } else if (q.includes('react') || q.includes('frontend') || q.includes('fullstack') || q.includes('web')) {
+                skills = [
+                    { name: "State Architecture (Redux & React Query)", hours: 30, difficulty: "Intermediate", relevance: 95, resources: ["Redux Toolkit Docs", "Kent C. Dodds Guides"] },
+                    { name: "TypeScript Type Safety & Interfaces", hours: 25, difficulty: "Intermediate", relevance: 92, resources: ["TypeScript Deep Dive", "TS Playground"] },
+                    { name: "Node.js REST API Architecture", hours: 40, difficulty: "Intermediate", relevance: 87, resources: ["Express.js Guide", "Net Ninja Playlist"] },
+                    { name: "Database Query Optimization (SQL)", hours: 30, difficulty: "Intermediate", relevance: 80, resources: ["SQL Performance Explained", "PostgreSQL Tutorial"] }
+                ];
+            } else {
+                skills = [
+                    { name: "Algorithms & Complex Data Structures", hours: 60, difficulty: "Intermediate", relevance: 90, resources: ["LeetCode Study Plan", "MIT Introduction to Algorithms"] },
+                    { name: "Git Workflow & Repository Integrity", hours: 15, difficulty: "Easy", relevance: 88, resources: ["Pro Git Book", "GitHub Sandbox"] },
+                    { name: "System Design & Microservices Principles", hours: 50, difficulty: "Advanced", relevance: 85, resources: ["Designing Data-Intensive Apps", "ByteByteGo System Design"] }
+                ];
+            }
+        }
+        
         resultsContainer.innerHTML = '';
         skills.forEach((skill, index) => {
             const card = document.createElement('div');
             card.className = 'ai-skill-card';
             card.style.animationDelay = `${index * 0.1}s`;
             
-            // Build resource chips
             const resourcesHTML = skill.resources.map(res => `
                 <a href="#" class="resource-chip" onclick="window.open('https://www.google.com/search?q=${encodeURIComponent(res)}', '_blank'); return false;">
                     <i class="fa-solid fa-graduation-cap"></i> ${res}
@@ -737,7 +741,7 @@ async function generateAISkills() {
                     </div>
                     <div class="relevance-score-container">
                         <span class="relevance-dot"></span>
-                        <span class="relevance-val" style="font-weight: 700; color: var(--color-cyan);">${skill.relevance}% Rel</span>
+                        <span class="relevance-val" style="font-weight: 700; color: var(--color-cyan);">${skill.relevance}% Match</span>
                     </div>
                 </div>
                 <div class="resources-list">
@@ -753,12 +757,10 @@ async function generateAISkills() {
         });
         
         showToast('Personalized learning roadmap compiled successfully.', 'success');
-        
-    }, 1500);
+    }, 1200);
 }
 
 async function trackSkill(name, goal) {
-    // Check if already tracking
     if (state.targetSkills.some(s => s.name === name)) {
         showToast(`Already tracking ${name}!`, 'warning');
         return;
@@ -778,7 +780,7 @@ function renderTargetSkills() {
     document.getElementById('target-skills-count').textContent = `${state.targetSkills.length} Tracked`;
     
     if (state.targetSkills.length === 0) {
-        list.innerHTML = `<p style="padding: 10px; text-align: center; color: var(--text-muted); font-size:13px;">No skill targets added yet. Use AI generator to register skills.</p>`;
+        list.innerHTML = `<p style="padding: 10px; text-align: center; color: var(--text-muted); font-size:13px;">No skill targets added yet. Use AI generator to track skills.</p>`;
         return;
     }
     
@@ -791,7 +793,7 @@ function renderTargetSkills() {
                     <span class="target-skill-title">${skill.name}</span>
                     <p style="font-size:11px; color: var(--text-muted)">Mapped to: ${skill.goal || 'General Software Engineering'}</p>
                 </div>
-                <button class="btn-remove-skill" onclick="removeTargetSkill('${skill.id}')" title="Remove Tracked Skill">
+                <button class="btn-remove-skill" onclick="removeTargetSkill('${skill.id}')" title="Remove Skill" aria-label="Remove skill ${skill.name}">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
@@ -818,7 +820,7 @@ async function incrementSkillProgress(id, currentProgress) {
     const newProgress = Math.min(100, currentProgress + 10);
     await requestAPI(`/skills/targets/${id}`, 'PUT', { progress: newProgress });
     
-    state.targetSkills = state.targetSkills.map(s => s.id === id ? { ...s, progress: newProgress } : s);
+    state.targetSkills = state.targetSkills.map(s => String(s.id) === String(id) ? { ...s, progress: newProgress } : s);
     renderTargetSkills();
     showToast('Progress updated!', 'success');
 }
@@ -826,19 +828,18 @@ async function incrementSkillProgress(id, currentProgress) {
 async function removeTargetSkill(id) {
     if (confirm('Stop tracking this target skill?')) {
         await requestAPI(`/skills/targets/${id}`, 'DELETE');
-        state.targetSkills = state.targetSkills.filter(s => s.id !== id);
+        state.targetSkills = state.targetSkills.filter(s => String(s.id) !== String(id));
         renderTargetSkills();
         updateGlobalStats();
         showToast('Removed skill target.', 'info');
     }
 }
 
-// --- Dynamic Rendering: 5. Dashboard Overview Quick Peeks ---
+// Overview Dashboard Quick Peeks
 function renderQuickSchedulePeek(scheduleItems) {
     const container = document.getElementById('quick-schedule');
     container.innerHTML = '';
     
-    // Peak first 3 items
     const peakItems = scheduleItems.slice(0, 3);
     
     peakItems.forEach(item => {
@@ -859,7 +860,6 @@ function renderQuickTasksPeek() {
     const container = document.getElementById('quick-tasks');
     container.innerHTML = '';
     
-    // Sort tasks: high priority first, then medium, then low, and only show unfinished ones
     const priorityWeight = { high: 3, medium: 2, low: 1 };
     const pendingTasks = state.tasks
         .filter(t => t.status !== 'completed')
@@ -885,12 +885,10 @@ function renderQuickTasksPeek() {
     });
 }
 
-// --- Charts Setup & Integration (Chart.js) ---
+// Chart.js Visualizations
 function initCharts() {
-    // 1. GPA Progression Line Chart
     const ctxGpa = document.getElementById('gpaChart').getContext('2d');
     
-    // Create violet/cyan gradient fills
     const gpaGrad = ctxGpa.createLinearGradient(0, 0, 0, 300);
     gpaGrad.addColorStop(0, 'rgba(123, 97, 255, 0.45)');
     gpaGrad.addColorStop(1, 'rgba(123, 97, 255, 0.0)');
@@ -898,10 +896,10 @@ function initCharts() {
     const chartConfigGpa = {
         type: 'line',
         data: {
-            labels: [], // Populated dynamically
+            labels: [],
             datasets: [{
                 label: 'GPA Equivalent',
-                data: [], // Populated dynamically
+                data: [],
                 borderColor: 'rgba(123, 97, 255, 1)',
                 borderWidth: 3,
                 backgroundColor: gpaGrad,
@@ -943,7 +941,6 @@ function initCharts() {
     };
     gpaChartInstance = new Chart(ctxGpa, chartConfigGpa);
     
-    // 2. Productivity Radar/Bar Chart
     const ctxProd = document.getElementById('productivityChart').getContext('2d');
     const prodGrad = ctxProd.createLinearGradient(0, 0, 0, 300);
     prodGrad.addColorStop(0, 'rgba(0, 240, 255, 0.8)');
@@ -956,7 +953,7 @@ function initCharts() {
             datasets: [
                 {
                     label: 'Study Duration (Hours)',
-                    data: [3.5, 4.0, 5.5, 2.0, 3.0, 6.0, 1.5], // Populated dynamically or defaulted
+                    data: [3.5, 4.0, 5.5, 2.0, 3.0, 6.0, 1.5],
                     backgroundColor: prodGrad,
                     borderRadius: 8,
                     borderWidth: 0,
@@ -995,47 +992,39 @@ function initCharts() {
 function updateCharts() {
     if (!gpaChartInstance || !productivityChartInstance) return;
     
-    // Update GPA Progression Chart
-    // Sort courses (excluding In-Progress) to make a progression line
     const completedCourses = state.courses
         .filter(c => c.grade !== 'IP')
-        .slice(-6); // Last 6 courses
+        .slice(-6);
         
     if (completedCourses.length > 0) {
         gpaChartInstance.data.labels = completedCourses.map(c => c.code);
         gpaChartInstance.data.datasets[0].data = completedCourses.map(c => c.gpa);
     } else {
-        // Fallback placeholder data if empty
         gpaChartInstance.data.labels = ['Sem 1', 'Sem 2', 'Sem 3'];
         gpaChartInstance.data.datasets[0].data = [3.5, 3.8, 3.85];
     }
     gpaChartInstance.update();
     
-    // Update Productivity patterns chart based on routine log history
-    const weekdayDurations = [0, 0, 0, 0, 0, 0, 0]; // Mon-Sun cumulative study minutes
+    const weekdayDurations = [0, 0, 0, 0, 0, 0, 0];
     
     state.routineLogs.forEach(log => {
         const d = new Date(log.date);
-        let dayIndex = d.getDay() - 1; // getDay: 0 is Sun, 1 is Mon...
-        if (dayIndex < 0) dayIndex = 6; // Shift Sun to end
+        let dayIndex = d.getDay() - 1;
+        if (dayIndex < 0) dayIndex = 6;
         
         if (dayIndex >= 0 && dayIndex <= 6) {
             weekdayDurations[dayIndex] += Number(log.duration);
         }
     });
     
-    // Convert to hours
     const weekdayHours = weekdayDurations.map(m => Number((m / 60).toFixed(1)));
-    
-    // Use fallback mock values if no routine log events exist
     const hasActiveData = weekdayHours.some(h => h > 0);
     productivityChartInstance.data.datasets[0].data = hasActiveData ? weekdayHours : [2.5, 3.5, 4.0, 1.5, 3.0, 5.0, 2.0];
     productivityChartInstance.update();
 }
 
-// --- Forms Submission Handling ---
+// Form Handlers
 function initForms() {
-    // 1. Course Registration
     const courseForm = document.getElementById('course-form');
     courseForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1059,7 +1048,6 @@ function initForms() {
         showToast('New course registered successfully.', 'success');
     });
 
-    // Automatically update GPA equivalents based on letter grade selection to help user
     const gradeSelect = document.getElementById('course-grade');
     const gpaInput = document.getElementById('course-gpa');
     
@@ -1071,7 +1059,6 @@ function initForms() {
         gpaInput.value = gradeMap[gradeSelect.value].toFixed(2);
     });
 
-    // 2. Task Registration
     const taskForm = document.getElementById('task-form');
     taskForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1095,10 +1082,8 @@ function initForms() {
         showToast('New task added successfully.', 'success');
     });
 
-    // Set today as default due date
     document.getElementById('task-due').value = getFutureDate(0);
 
-    // 3. Routine Log Registration
     const routineForm = document.getElementById('routine-form');
     routineForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -1122,30 +1107,25 @@ function initForms() {
         showToast('Activity logged successfully.', 'success');
     });
     
-    // Set default routine log date to today
     document.getElementById('routine-date').value = getFutureDate(0);
 }
 
-// --- Universal Modals Handler ---
+// Modal System
 function initModals() {
-    // Open course modal
     document.getElementById('add-course-btn').addEventListener('click', () => {
         openModal('course-modal');
     });
 
-    // Open task modal
     document.getElementById('add-task-btn').addEventListener('click', () => {
         openModal('task-modal');
     });
 
-    // Close buttons
     document.querySelectorAll('.btn-close-modal').forEach(btn => {
         btn.addEventListener('click', () => {
             closeAllModals();
         });
     });
 
-    // Click outside overlay to close
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
@@ -1168,7 +1148,7 @@ function closeAllModals() {
     });
 }
 
-// --- Custom Toast Alert Utility ---
+// Toast Alert System
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -1182,12 +1162,11 @@ function showToast(message, type = 'info') {
     toast.innerHTML = `
         <span class="toast-icon"><i class="fa-solid ${iconClass}"></i></span>
         <span class="toast-message">${message}</span>
-        <button class="toast-close" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="toast-close" onclick="this.parentElement.remove()" aria-label="Close notification"><i class="fa-solid fa-xmark"></i></button>
     `;
     
     container.appendChild(toast);
     
-    // Auto remove after 4 seconds
     setTimeout(() => {
         if (toast.parentElement) {
             toast.style.opacity = '0';

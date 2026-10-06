@@ -1,89 +1,89 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
-# Hardcoded corpus of focus topics, courses, and skills for content-based recommendation
+# Focus topics, courses, and skills corpus for TF-IDF content-based skill recommendation
 RECOMMENDATION_CORPUS = [
     {
         "id": 1,
         "title": "Machine Learning & Deep Learning Fundamentals",
         "category": "Artificial Intelligence",
         "skills": "Python, Machine Learning, Deep Learning, Neural Networks, TensorFlow, PyTorch, Scikit-Learn",
-        "description": "Learn the theory and implementation of core machine learning algorithms, deep learning models, and training techniques."
+        "description": "Learn the theory and implementation of core machine learning algorithms, deep neural networks, and training pipelines."
     },
     {
         "id": 2,
-        "title": "Full-Stack Web Development Boot Camp",
+        "title": "Full-Stack Web Development & Modern Frameworks",
         "category": "Software Engineering",
-        "skills": "HTML, CSS, JavaScript, React, Node.js, Express, MongoDB, REST APIs, Git",
-        "description": "Build dynamic, responsive web applications from front to back using HTML, CSS, JavaScript, and Node.js."
+        "skills": "HTML, CSS, JavaScript, React, Node.js, Express, FastApi, MongoDB, REST APIs, Git",
+        "description": "Build dynamic, responsive web applications from front to back using modern UI frameworks, RESTful endpoints, and backend architectures."
     },
     {
         "id": 3,
-        "title": "Data Engineering and Pipelines",
+        "title": "Data Engineering & Scalable ETL Pipelines",
         "category": "Data Science",
         "skills": "SQL, Python, Apache Spark, ETL, Data Warehousing, Data Pipelines, AWS, Docker",
-        "description": "Design and build data architectures, ETL processes, and scale pipeline pipelines to manage massive datasets."
+        "description": "Design and build data architectures, stream processing pipelines, and scalable warehouse systems for massive datasets."
     },
     {
         "id": 4,
         "title": "Cloud Architecture & DevOps Essentials",
         "category": "Cloud & Infrastructure",
         "skills": "AWS, Docker, Kubernetes, CI/CD, Terraform, Linux, Shell Scripting, Security",
-        "description": "Understand cloud systems architecture, containerization, container orchestration, and continuous deployment workflows."
+        "description": "Master cloud infrastructure design, microservice containerization, container orchestration, and automated deployment pipelines."
     },
     {
         "id": 5,
-        "title": "UI/UX Product Design & Prototyping",
+        "title": "UI/UX Product Design & Design Systems",
         "category": "Design",
-        "skills": "Figma, User Research, Wireframing, Prototyping, Visual Design, Information Architecture",
-        "description": "Master user-centric design principles, conduct user research, and build interactive wireframes and prototypes."
+        "skills": "Figma, User Research, Wireframing, Prototyping, Visual Design, Information Architecture, Accessibility",
+        "description": "Master user-centered design principles, conduct behavioral research, and craft interactive design systems and wireframes."
     },
     {
         "id": 6,
-        "title": "Introduction to Data Science & Analytics",
+        "title": "Data Science, Analytics & Statistical Modeling",
         "category": "Data Science",
-        "skills": "R, Python, SQL, Tableau, Statistics, Probability, Data Visualization, Excel",
-        "description": "Analyze data, perform statistical tests, build dashboards, and extract business insights from structured datasets."
+        "skills": "R, Python, SQL, Tableau, Statistics, Probability, Data Visualization, Excel, Pandas",
+        "description": "Analyze multi-dimensional data, perform rigorous statistical tests, construct executive dashboards, and extract business insights."
     },
     {
         "id": 7,
-        "title": "Mobile App Development with Flutter & Dart",
+        "title": "Cross-Platform Mobile App Development",
         "category": "Software Engineering",
-        "skills": "Dart, Flutter, iOS, Android, State Management, Firebase, Mobile UI",
-        "description": "Create cross-platform mobile apps for iOS and Android using Flutter's widget framework and Dart."
+        "skills": "Dart, Flutter, iOS, Android, State Management, Firebase, Mobile UI, React Native",
+        "description": "Create fluid cross-platform mobile apps for iOS and Android using modern reactive UI toolkits and backend integrations."
     },
     {
         "id": 8,
-        "title": "Cybersecurity & Ethical Hacking Basics",
+        "title": "Cybersecurity & Ethical Hacking Systems",
         "category": "Cybersecurity",
-        "skills": "Network Security, Penetration Testing, Linux, Cryptography, OWASP Top 10, Firewalls",
-        "description": "Identify vulnerabilities, secure computer networks, and learn standard hacking techniques and countermeasures."
+        "skills": "Network Security, Penetration Testing, Linux, Cryptography, OWASP Top 10, Firewalls, Threat Analysis",
+        "description": "Identify system vulnerabilities, harden cloud networks, and understand modern attack vectors and defensive security protocols."
     },
     {
         "id": 9,
-        "title": "Advanced Data Structures & Algorithms",
+        "title": "Advanced Data Structures & Algorithmic Optimization",
         "category": "Computer Science",
-        "skills": "Java, C++, Algorithms, Graphs, Dynamic Programming, Time Complexity, Tree Structures",
-        "description": "Deep dive into advanced algorithmic design patterns, data structure optimizations, and competitive programming principles."
+        "skills": "Java, C++, Algorithms, Graphs, Dynamic Programming, Time Complexity, Tree Structures, LeetCode",
+        "description": "Deep dive into advanced algorithmic design patterns, data structure efficiency optimizations, and competitive problem solving."
     },
     {
         "id": 10,
-        "title": "Natural Language Processing and Large Language Models",
+        "title": "Natural Language Processing & LLM Engineering",
         "category": "Artificial Intelligence",
-        "skills": "NLP, Transformers, HuggingFace, LLMs, Text Processing, PyTorch, Tokenization",
-        "description": "Train and fine-tune large language models, build chatbots, and build applications utilizing modern NLP systems."
+        "skills": "NLP, Transformers, HuggingFace, LLMs, Text Processing, PyTorch, Tokenization, Vector DBs",
+        "description": "Fine-tune large language models, build generative AI agents, and implement semantic retrieval and NLP pipelines."
     }
 ]
 
-def recommend_skills(career_objective: str, num_recommendations: int = 3):
+def recommend_skills(career_objective: str, num_recommendations: int = 3) -> list:
     """
     Content-Based Skill Recommender:
-    Uses TF-IDF Vectorizer and Cosine Similarity to compare the student's career objective
-    with available training modules/courses in the corpus, returning the top matches.
+    Uses TF-IDF Vectorization and Cosine Similarity to score the student's career objective
+    against the training corpus, returning the top matching modules.
     """
-    if not career_objective:
+    if not career_objective or not career_objective.strip():
         return []
     
     corpus_texts = []
@@ -116,13 +116,10 @@ def recommend_skills(career_objective: str, num_recommendations: int = 3):
 
 def optimize_schedule(routine_logs: list, active_tasks: list) -> dict:
     """
-    Routine Adjuster Heuristic:
-    Evaluates logged study sessions to determine optimal sleep/energy conditions,
-    calculates workload score from active tasks, and designs a customized, hour-by-hour
-    study schedule optimized to avoid burnout and match peak focus periods.
+    Adaptive Schedule Optimizer:
+    Evaluates logged study sessions to determine optimal sleep and cognitive state,
+    calculates workload score from active tasks, and constructs a burnout-aware daily schedule.
     """
-    # 1. Calculate Workload Score from Active Tasks
-    # Active tasks are those whose status is not "completed"
     workload_score = 0.0
     pending_tasks_count = 0
     high_priority_count = 0
@@ -133,21 +130,19 @@ def optimize_schedule(routine_logs: list, active_tasks: list) -> dict:
         
         if status in ["todo", "in_progress", "Pending", "In Progress"]:
             pending_tasks_count += 1
-            if priority.lower() == "high":
+            p_lower = str(priority).lower()
+            if p_lower == "high":
                 workload_score += 2.5
                 high_priority_count += 1
-            elif priority.lower() == "medium":
+            elif p_lower == "medium":
                 workload_score += 1.5
             else:
                 workload_score += 0.75
                 
-    # Calculate recommended daily study hours based on workload
     base_study_hours = 2.0
     recommended_study_hours = base_study_hours + (workload_score * 0.5)
-    recommended_study_hours = min(max(recommended_study_hours, 2.0), 8.0) # Cap between 2 and 8 hours
+    recommended_study_hours = min(max(recommended_study_hours, 2.0), 8.0)  # Clamp between 2 and 8 hours
 
-    # 2. Analyze Sleep and Productivity from logs
-    # Group logs by date to compute daily study hours
     daily_study_mins = {}
     daily_productivities = {}
     
@@ -163,37 +158,30 @@ def optimize_schedule(routine_logs: list, active_tasks: list) -> dict:
         daily_productivities[log_date].append(log_prod)
         
     study_hours_list = [mins / 60.0 for mins in daily_study_mins.values()]
-    avg_study_hours = np.mean(study_hours_list) if study_hours_list else 3.0
+    avg_study_hours = float(np.mean(study_hours_list)) if study_hours_list else 3.0
     
-    # Calculate simulated sleep hours: assume sleep decreases slightly if study duration is very high
-    # Let's map daily study hours to sleep hours
     sleep_list = []
     high_prod_sleep_list = []
     
     for log_date, mins in daily_study_mins.items():
         hours_studied = mins / 60.0
-        # Estimate sleep hours
         est_sleep = 8.5 - (hours_studied * 0.15)
-        # Clamp sleep between 5.0 and 9.0
         est_sleep = min(max(est_sleep, 5.0), 9.0)
         sleep_list.append(est_sleep)
         
-        # Average productivity for this day
-        avg_day_prod = np.mean(daily_productivities[log_date])
+        avg_day_prod = float(np.mean(daily_productivities[log_date]))
         if avg_day_prod >= 7.5:
             high_prod_sleep_list.append(est_sleep)
             
-    avg_sleep = np.mean(sleep_list) if sleep_list else 7.5
-    optimal_sleep = np.mean(high_prod_sleep_list) if high_prod_sleep_list else 8.0
+    avg_sleep = float(np.mean(sleep_list)) if sleep_list else 7.5
+    optimal_sleep = float(np.mean(high_prod_sleep_list)) if high_prod_sleep_list else 8.0
     
-    # Calculate sleep debt
     sleep_debt = optimal_sleep - avg_sleep
     
     if sleep_debt > 1.2:
         sleep_status = "Sleep Deprived"
         peak_focus = "Late Afternoon (16:00 - 18:00)"
         pomodoro_style = "Pomodoro: 40 mins study / 20 mins rest + Afternoon Power Nap"
-        # Reduce study hours slightly if sleep deprived to preserve mental health
         recommended_study_hours = max(recommended_study_hours - 1.5, 2.0)
     elif sleep_debt > 0.4:
         sleep_status = "Mild Sleep Debt"
@@ -205,163 +193,153 @@ def optimize_schedule(routine_logs: list, active_tasks: list) -> dict:
         peak_focus = "Morning (09:00 - 12:00) & Afternoon (14:00 - 17:00)"
         pomodoro_style = "Deep Work: 90 mins study / 15 mins break"
 
-    # 3. Design Hour-by-Hour Schedule
-    schedule = []
+    schedule = [
+        {
+            "time_slot": "07:00 - 08:30",
+            "activity": "Morning Routine & Hydration",
+            "description": "Wake up, eat a balanced breakfast, and prepare for the day."
+        },
+        {
+            "time_slot": "08:30 - 09:00",
+            "activity": "Daily Planning & Focus Alignment",
+            "description": "Review priorities and organize workspace for active study blocks."
+        }
+    ]
     
-    # Morning Routine
-    schedule.append({
-        "time_slot": "07:00 - 08:30",
-        "activity": "Morning Routine & Breakfast",
-        "description": "Wake up, eat a nutritious breakfast, and hydrate."
-    })
-    schedule.append({
-        "time_slot": "08:30 - 09:00",
-        "activity": "Daily Planning & Review",
-        "description": "Identify today's primary tasks and set focus goals."
-    })
-    
-    # Distribute study hours into blocks
     remaining_study = recommended_study_hours
     
-    # Morning Study Block
     if remaining_study >= 2.0:
         if sleep_status == "Sleep Deprived":
-            # Sleep deprived students should do light admin or rest in the morning
             schedule.append({
                 "time_slot": "09:00 - 11:00",
-                "activity": "Light Study / Planning",
-                "description": f"Read notes, plan tasks. Use {pomodoro_style}."
+                "activity": "Light Study / Review Session",
+                "description": f"Read lecture slides and revise notes. Use {pomodoro_style}."
             })
             remaining_study -= 2.0
         else:
             block_time = min(2.5, remaining_study)
             schedule.append({
                 "time_slot": "09:00 - 11:30",
-                "activity": "Study Block 1: Deep Work (Peak Energy)",
-                "description": f"Focus on high-priority tasks and complex problem solving. Use {pomodoro_style}."
+                "activity": "Study Block 1: Deep Focus Work",
+                "description": f"Target high-priority coursework and algorithm implementations. {pomodoro_style}."
             })
             remaining_study -= block_time
     else:
         schedule.append({
             "time_slot": "09:00 - 11:30",
-            "activity": "Leisure / Reading",
-            "description": "Read articles, catch up on news, or relax."
+            "activity": "Curriculum Exploration & Reading",
+            "description": "Read tech articles, research topics, or explore documentation."
         })
         
     schedule.append({
         "time_slot": "11:30 - 13:00",
-        "activity": "Admin Tasks & Mid-day Break",
-        "description": "Handle emails, organize files, and relax."
+        "activity": "Administrative Tasks & Mid-day Recess",
+        "description": "Organize study material, reply to messages, and unwind."
     })
     
     schedule.append({
         "time_slot": "13:00 - 14:00",
-        "activity": "Lunch & Social Time",
-        "description": "Have a healthy lunch, chat with peers, or walk."
+        "activity": "Lunch & Physical Mobility",
+        "description": "Nutritious lunch and light outdoor walking."
     })
     
-    # Mid-day nap/rest adjustment for sleep debt
     if sleep_status == "Sleep Deprived":
         schedule.append({
             "time_slot": "14:00 - 14:45",
             "activity": "Rest & Power Nap",
-            "description": "Highly recommended to recharge cognitive batteries."
+            "description": "Essential power nap to restore cognitive alertness."
         })
         afternoon_start = "14:45"
     elif sleep_status == "Mild Sleep Debt":
         schedule.append({
             "time_slot": "14:00 - 14:20",
-            "activity": "Power Nap / Mindful Breathing",
-            "description": "Quick rest to combat mid-day energy dip."
+            "activity": "Power Nap / Mindfulness",
+            "description": "Quick relaxation session to overcome afternoon dip."
         })
         afternoon_start = "14:20"
     else:
         afternoon_start = "14:00"
         
-    # Afternoon Study Block
     if remaining_study > 0:
         block_time = min(2.5, remaining_study)
         schedule.append({
             "time_slot": f"{afternoon_start} - 16:30",
-            "activity": "Study Block 2: Collaborative / Applied Practice",
-            "description": f"Assignments, coding, or discussion groups. {pomodoro_style}."
+            "activity": "Study Block 2: Hands-on Projects & Coding",
+            "description": f"Practical assignments and lab problem solving. {pomodoro_style}."
         })
         remaining_study -= block_time
     else:
         schedule.append({
             "time_slot": f"{afternoon_start} - 16:30",
-            "activity": "Hobby / Personal Projects",
-            "description": "Explore interests outside of curriculum."
+            "activity": "Personal Learning & Side Projects",
+            "description": "Explore personal coding interests outside school."
         })
         
     schedule.append({
         "time_slot": "16:30 - 17:30",
-        "activity": "Exercise / Outdoor Time",
-        "description": "A light workout, run, or walk outside to boost circulation and mental clarity."
+        "activity": "Physical Exercise & Outdoors",
+        "description": "Cardio, gym, or walking to recharge energy levels."
     })
     
-    # Late Afternoon / Evening Study Block
     if remaining_study > 0:
         block_time = min(2.0, remaining_study)
         schedule.append({
             "time_slot": "17:30 - 19:00",
-            "activity": "Study Block 3: Review & Homework",
-            "description": f"Refine what was learned, work on minor assignments. {pomodoro_style}."
+            "activity": "Study Block 3: Assignment Polish & Review",
+            "description": f"Double-check homework, practice set problems. {pomodoro_style}."
         })
         remaining_study -= block_time
     else:
         schedule.append({
             "time_slot": "17:30 - 19:00",
-            "activity": "Social / Relaxation",
-            "description": "Relax, watch a show, or socialize."
+            "activity": "Social Connection & Leisure",
+            "description": "Relax with friends or enjoy creative hobbies."
         })
         
     schedule.append({
         "time_slot": "19:00 - 20:30",
-        "activity": "Dinner & Family/Friend Time",
-        "description": "Wind down from academic commitments."
+        "activity": "Dinner & Leisure Time",
+        "description": "Wind down academic commitments for the evening."
     })
     
-    # Night Study Block
     if remaining_study > 0:
         schedule.append({
             "time_slot": "20:30 - 22:00",
-            "activity": "Study Block 4: Gentle Review",
-            "description": "Review vocabulary, flashcards, or prepare tasks for tomorrow. Do not start new topics."
+            "activity": "Study Block 4: Light Flashcards & Reading",
+            "description": "Review key terms and formulas. Avoid heavy new concepts before bed."
         })
     else:
         schedule.append({
             "time_slot": "20:30 - 22:00",
-            "activity": "Creative Play / Reading",
-            "description": "Fiction reading, drawing, or light hobby."
+            "activity": "Reading / Creative Play",
+            "description": "Read fiction, listen to music, or relax."
         })
         
     schedule.append({
         "time_slot": "22:00 - 23:00",
-        "activity": "Digital Detox & Sleep Prep",
-        "description": "Turn off screens, meditate, or prepare for bed."
+        "activity": "Digital Detox & Evening Wind-down",
+        "description": "Disconnect from screens, prepare for a restful sleep."
     })
     
-    # Sleep
     schedule.append({
         "time_slot": "23:00 - 07:00",
         "activity": "Sleep",
-        "description": f"Maintain a dark, cool environment. Aim for consistent wake up."
+        "description": "Restful sleep in a dark, quiet environment."
     })
 
-    # Insights & Suggestions
-    insights = []
-    insights.append(f"Optimal sleep duration calculated from your peak productivity: {optimal_sleep:.1f} hours.")
-    insights.append(f"Your recent average sleep is {avg_sleep:.1f} hours, putting you in a state of '{sleep_status}'.")
+    insights = [
+        f"Optimal sleep calculated for peak cognitive output: {optimal_sleep:.1f} hours.",
+        f"Recent average sleep estimated at {avg_sleep:.1f} hours ({sleep_status})."
+    ]
     
     if sleep_status == "Sleep Deprived":
-        insights.append("Recommendation: High priority tasks should be deferred or handled slowly. We inserted a mandatory power nap and trimmed study hours to prevent cognitive fatigue.")
+        insights.append("Notice: Mandatory power nap inserted and study load trimmed to prevent burnout.")
     elif sleep_status == "Mild Sleep Debt":
-        insights.append("Recommendation: A short nap is scheduled to replenish mental reserves. Study in 50-minute blocks with 10-minute breaks to sustain energy.")
+        insights.append("Notice: Short rest interval scheduled. Recommend 50-min study blocks with 10-min breaks.")
     else:
-        insights.append("Recommendation: Excellent sleep hygiene! You are ready for Deep Work (90-minute blocks). Leverage your morning peak focus period for complex concepts.")
+        insights.append("Notice: Excellent cognitive status! Deep Work blocks (90 min) enabled.")
         
-    insights.append(f"Workload score is {workload_score:.2f} based on {pending_tasks_count} pending task(s) (including {high_priority_count} high-priority tasks). We recommend {recommended_study_hours:.1f} study hours today.")
+    insights.append(f"Workload score is {workload_score:.2f} based on {pending_tasks_count} pending tasks ({high_priority_count} high priority). Recommended study duration: {recommended_study_hours:.1f} hours.")
 
     return {
         "optimal_sleep_hours": round(optimal_sleep, 2),
